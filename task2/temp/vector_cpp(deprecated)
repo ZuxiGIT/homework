@@ -1,0 +1,16 @@
+#include "vector.hpp"
+#include <algorithm>
+
+
+
+// Vector& Vector::operator=(const Vector& rhs)
+// {
+//     if(this != &rhs)
+//     {
+//         delete [] m_arr;
+//         m_len = rhs.m_len;
+//         m_arr = new Number [rhs.m_len];
+//         copy(m_arr, rhs.m_arr, rhs.m_len);
+//     }
+//     return *this;
+// }
