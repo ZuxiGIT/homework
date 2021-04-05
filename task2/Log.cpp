@@ -1,8 +1,7 @@
 #include "Log.hpp"
-#include "Number.hpp"
 #include <stdio.h>
-#include <windows.h>
-
+//#include <windows.h>
+//#include <wincon.h>
 
 int Log::m_shift = 0;
 
@@ -130,28 +129,28 @@ void Log::function(const Number& lhs, const Number& rhs)
     SetConsoleColour(oldColour & 0xFF, COL((oldColour & 0xFF00) >> 4));
 }
 
-COL SetConsoleColour(COL foreground, COL background)
-{
-    COL oldColour = GetConsoleColour();
+// COL SetConsoleColour(COL foreground, COL background)
+// {
+//     COL oldColour = GetConsoleColour();
     
-    if(!SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (WORD)(foreground | background << 4)))
-    {
-        fprintf(stderr, "ERROR::SETCONSOLETEXTATTRIBURE\n");
-        exit(1);
-    }
+//     if(!SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), (WORD)(foreground | background << 4)))
+//     {
+//         fprintf(stderr, "ERROR::SETCONSOLETEXTATTRIBURE\n");
+//         exit(1);
+//     }
 
-    return oldColour;
-}
+//     return oldColour;
+// }
 
-COL GetConsoleColour()
-{
-    CONSOLE_SCREEN_BUFFER_INFO config = {};
+// COL GetConsoleColour()
+// {
+//     CONSOLE_SCREEN_BUFFER_INFO config = {};
 
-    if(!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &config))
-    {
-        fprintf(stderr, "ERROR::GETCONSOLESCREENBUFFERINFO\n");
-        exit(1);
-    }
+//     if(!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &config))
+//     {
+//         fprintf(stderr, "ERROR::GETCONSOLESCREENBUFFERINFO\n");
+//         exit(1);
+//     }
 
-    return (COL)(config.wAttributes & 0xFF);
-}
+//     return (COL)(config.wAttributes & 0xFF);
+// }

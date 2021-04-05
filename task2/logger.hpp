@@ -1,28 +1,41 @@
 #pragma once
 #include <stdio.h>
-#include <sstream>
+#include <string>
 #include <fstream>
+
+#define _ERROR(_str) fprintf(stderr, _str);
+#define _CHAR(x)  std::to_string(x)
+
+
+struct Obj2log
+{
+	virtual std::string createGraphNode() = 0;//  { return ""; }
+	virtual std::string createHistoryEdge() = 0;//{ return ""; }
+};
 
 class Logger
 {
-    bool m_created = false;
-    int m_shift  = 0;
+
+    static bool m_created;
 protected:
-    std::ofstream m_output = {};
-public:
+    static int m_shift;
+    static std::ofstream m_output;
     void shift(); 
+public:
     Logger();
-    Logger(std::string&& filename);
+    explicit Logger(const std::string& filename);
+    void close();
     ~Logger();
 };
 
 
-class LogFunc : Logger
+class LogFunc : public Logger
 {
-     std::string m_lastFunc = {};
-     std::string m_currFunc = {};
+    std::string m_last_funcction = "";
+    static std::string current_function;
+    static int function_counter;
 public:
-    LogFunc();
+    LogFunc(const std::string& funcname);
 
     LogFunc(const LogFunc&) = delete;
     LogFunc& operator=(const LogFunc&) = delete;
@@ -30,11 +43,12 @@ public:
     ~LogFunc();
 };
 
-class LogObj : Logger
+class LogObj : public Logger
 {
 
+	static std::string lastObj;
 public:
-    LogObj();
+    LogObj(Obj2log& obj);
 
     LogObj(const LogObj&) = delete;
     LogObj& operator=(const LogObj&) = delete;
@@ -42,3 +56,4 @@ public:
     ~LogObj();
 
 };
+

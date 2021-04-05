@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <iostream>
-
+#include <typeinfo>
 
 template<int N>
 struct Print{};
@@ -13,7 +13,7 @@ struct Print{};
 template<int N>
 struct factorial
 {
-    static const int value = (Print< N * factorial<N-1>::value>::please, N * factorial<N-1>::value) ;
+    static const int value = /*(Print< N * factorial<N-1>::value>::please,*/ N * factorial<N-1>::value ;
 };
 
 template<>
@@ -148,7 +148,7 @@ template<typename T, typename... Args>
 void Printf(const char* s, T value, Args ... args)
 {
     int num = NumOfArgs<Args...>::value + 1;
-    std::cout <<"\n------->"<< num <<"and "<<sizeof...(Args)<<"<-------\n";
+    std::cout <<"\n------->" << num << "and " << sizeof...(Args) <<"<-------\n";
 
     while(*s)
     {
@@ -166,13 +166,72 @@ void Printf(const char* s, T value, Args ... args)
     }
 }
 
+inline void MyPrintf(const char* s, ...)
+{
+    va_list vl;
+    va_start(vl, s);
+    while(char c = *s++)
+    {
+        if(c == '#')
+        {
+            switch (*s)
+            {
+                case 'l':
+                {
+                    long arg = va_arg(vl, long);
+                    printf("%ld", arg);
+                    break;
+                }
+                case 'u':
+                {
+                    unsigned int arg = va_arg(vl, unsigned int);
+                    printf("%u", arg);
+                    break;
+                }
+                case 'c':
+                case 'i':
+                {
+                    int arg = va_arg(vl, int);
+                    printf("%d", arg);
+                    break;
+                }
+                case 'f':
+                case 'd':
+                {
+                    double arg = va_arg(vl, double);
+                    printf("%lf", arg);
+                    break;
+                }
+                case 's':
+                {
+                    const char* arg = va_arg(vl, char*);
+                    printf("%s", arg);
+                    break;
+                }
+                case 'p':
+                {
+                    void* arg = va_arg(vl, void*);
+                    printf("%p", arg);
+                    break;
+                }
+                default:
+                    break;
+            }
+            s++;
+            continue;
+        }
+        putchar(c);
+    }
+    va_end(vl);
+}
 
 
-//int fac = Print<factorial<10>::value>::mew;
+
+// int fac = Print<factorial<10>::value>::mew;
 // int fib = Print<fibbonachi<5>::value>::mew;
 // int isP = Print<isPrime<6>::value>::mew;
 // int euc = Print<euclid<30, 12>::value>::mew;
-void PrintFError(const char * format, ...) 
+inline void PrintFError(const char * format, ...) 
 {
     char buffer[256];
     va_list args;
@@ -185,19 +244,20 @@ void PrintFError(const char * format, ...)
 
 int main()
 { 
-    int a[2][2] = {{1, 2}, {3, 4}};
-    int b[2][2] = {{5, 6}, {7, 8}};
+    MyPrintf("test Int #i Double #d String #s anothwe texxt afteer\n", 12, 3.14, "STRING_TEXTX");
+    // int a[2][2] = {{1, 2}, {3, 4}};
+    // int b[2][2] = {{5, 6}, {7, 8}};
 
-    std::cout <<typeid(long long).name();
-    Printf("absdb # asfaf # # #", 12, "hello", "from", 12343);
-    matSum<int, 2, 2>::mat_Sum(a, b);
+    // std::cout <<typeid(long long).name();
+    // Printf("absdb # asfaf # # #", 12, "hello", "from", 12343);
+    // matSum<int, 2, 2>::mat_Sum(a, b);
     
-    for(int j = 0; j < 2;j ++)
-    {       
-        for(int i = 0; i < 2;i ++)
-            printf("%2d ", a[j][i]);
-        printf("\n");
-    }
+    // for(int j = 0; j < 2;j ++)
+    // {       
+    //     for(int i = 0; i < 2;i ++)
+    //         printf("%2d ", a[j][i]);
+    //     printf("\n");
+    // }
 
     getchar();
     

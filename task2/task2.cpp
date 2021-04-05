@@ -1,7 +1,7 @@
-//#include <logger.hpp>
+#include <logger.hpp>
 //#include <iostream>
 //#include <numeric>
- //#include <template.hpp>
+//#include <template.hpp>
 // #define ARRAY_(var,...)  ARRAY var  (__VA_ARGS__ __VA_OPT__(,) {#var , __FILE__, __LINE__, enum::ARRAY})
 // #define VECTOR_(var, type, ...) Vector var<type> (__VA_ARGS__ __VA_OPT__(,) {#var , __FILE__, __LINE__, enum::VECTOR, #type})
 

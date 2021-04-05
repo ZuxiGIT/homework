@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Deb",
             "includePath": [
                 "C:/MinGW/include/",
                 "${workspaceFolder}"
@@ -13,9 +13,9 @@
             ],
             "windowsSdkVersion": "10.0.18362.0",
             "cStandard": "c17",
-            "cppStandard": "c++03",
+            "cppStandard": "c++20",
             "intelliSenseMode": "gcc-x64",
-            "compilerPath": "C:/MinGW/bin/g++.exe",
+            "compilerPath": "/usr/bin/g++-9",
             "compilerArgs": [
                 "-g",
                 "-std=c++17",

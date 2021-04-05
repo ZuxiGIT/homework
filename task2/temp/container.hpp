@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 //#include "Number.hpp"
 //#include "Log.hpp"
 
@@ -18,7 +19,15 @@ struct params
     TYPE container_type = NOT_DEFINED;
     const char* type = nullptr;  
     const char* constructor = nullptr;
+
+    std::string getGraphNode() const;
 };
+
+std::string params::getGraphNode() const 
+{
+    std::string res = {};
+    return res;
+}
 
 
 class Container

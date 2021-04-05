@@ -1,0 +1,10 @@
+digraph test{
+	rankdir=TB;
+	subgraph cluster_1{
+		color=lightgrey;
+		style=filled;
+		label= "int main()";
+		node_1 [shape=record, label= "{ name: TEMPORARY | number: 1 | address: 0x7ffeca8aa530 | constr : Number::Number(prop)}"]
+		node_2 [shape=record, label= "{ name: TEMPORARY | number: 2 | address: 0x7ffeca8aa580 | constr : Number::Number(int, prop)}"]
+	}
+}
