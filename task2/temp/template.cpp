@@ -242,24 +242,24 @@ inline void PrintFError(const char * format, ...)
 }
 
 
-int main()
-{ 
-    MyPrintf("test Int #i Double #d String #s anothwe texxt afteer\n", 12, 3.14, "STRING_TEXTX");
-    // int a[2][2] = {{1, 2}, {3, 4}};
-    // int b[2][2] = {{5, 6}, {7, 8}};
+// int main()
+// { 
+//     MyPrintf("test Int #i Double #d String #s anothwe texxt afteer\n", 12, 3.14, "STRING_TEXTX");
+//     // int a[2][2] = {{1, 2}, {3, 4}};
+//     // int b[2][2] = {{5, 6}, {7, 8}};
 
-    // std::cout <<typeid(long long).name();
-    // Printf("absdb # asfaf # # #", 12, "hello", "from", 12343);
-    // matSum<int, 2, 2>::mat_Sum(a, b);
+//     // std::cout <<typeid(long long).name();
+//     // Printf("absdb # asfaf # # #", 12, "hello", "from", 12343);
+//     // matSum<int, 2, 2>::mat_Sum(a, b);
     
-    // for(int j = 0; j < 2;j ++)
-    // {       
-    //     for(int i = 0; i < 2;i ++)
-    //         printf("%2d ", a[j][i]);
-    //     printf("\n");
-    // }
+//     // for(int j = 0; j < 2;j ++)
+//     // {       
+//     //     for(int i = 0; i < 2;i ++)
+//     //         printf("%2d ", a[j][i]);
+//     //     printf("\n");
+//     // }
 
-    getchar();
+//     getchar();
     
-    return 0;
-}
+//     return 0;
+// }

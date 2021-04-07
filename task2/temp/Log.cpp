@@ -1,7 +1,7 @@
 #include "Log.hpp"
+#include "Number.hpp"
 #include <stdio.h>
-//#include <windows.h>
-//#include <wincon.h>
+#include <windows.h>
 
 int Log::m_shift = 0;
 

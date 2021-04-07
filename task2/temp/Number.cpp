@@ -1,5 +1,5 @@
 #include "Number.hpp"
-//#include "//log.hpp"
+//#include "log.hpp"
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,8 +36,10 @@ std::string prop::getGraphNode()
     " | constr : "   + constructor            + \
     "}\"]\n";
     
-    // res += "node_" + _CHAR(origin_node)       + \
-    // "->node_" + _CHAR(overall_number);
+    /* 
+    res += "node_" + _CHAR(origin_node)       + \
+    "->node_" + _CHAR(overall_number);
+    */
     return res;
 }
 

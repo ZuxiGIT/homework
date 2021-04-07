@@ -1,7 +1,7 @@
 #pragma once
-#include <stdio.h>
 #include <string>
 #include <fstream>
+#include <sstream>
 
 #define _ERROR(_str) fprintf(stderr, _str);
 #define _CHAR(x)  std::to_string(x)
@@ -11,22 +11,25 @@ struct Obj2log
 {
 	virtual std::string createGraphNode() = 0;//  { return ""; }
 	virtual std::string createHistoryEdge() = 0;//{ return ""; }
+    virtual ~Obj2log() {}
 };
 
 class Logger
 {
-
-    static bool m_created;
+    static std::string filepath;
+    static unsigned int instances;
 protected:
     static int m_shift;
-    static std::ofstream m_output;
+    static std::ostringstream m_output;
     void shift(); 
 public:
     Logger();
     explicit Logger(const std::string& filename);
-    void close();
+
     ~Logger();
 };
+
+
 
 
 class LogFunc : public Logger

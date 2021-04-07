@@ -1,5 +1,7 @@
 #pragma once
 
+#include <wincon.h>
+
 #define BLACK           0
 #define BLUE            FOREGROUND_BLUE
 #define GREEN           FOREGROUND_GREEN

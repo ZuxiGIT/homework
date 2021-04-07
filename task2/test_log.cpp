@@ -1,14 +1,11 @@
-#include "Number.hpp"
+
+#include "logger.hpp"
 
 
-Logger log{"dot_test.dot"};
+Logger mylog{"dot_test.dot"};
 
 int main()
 {
-	{
-		LogFunc logfunc(__PRETTY_FUNCTION__);
-		Number a;
-		Number b(6);
-	}
-	log.close();
+LogFunc lgf(__PRETTY_FUNCTION__);
+
 }

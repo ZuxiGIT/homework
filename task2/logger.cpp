@@ -1,32 +1,31 @@
 #include "logger.hpp"
-#include <sstream>
 #include <iostream>
 #include <cassert>
 
-
-std::ofstream Logger::m_output = {};
+std::ostringstream Logger::m_output = {};
+std::string Logger::filepath = "";
 std::string LogObj::lastObj = {};
-std::string LogFunc::current_fucntion = "";
+std::string LogFunc::current_function = "";
 int LogFunc::function_counter = 0;
-bool Logger::m_created = false;
+unsigned int Logger::instances = 0;
 int Logger::m_shift  = 0;
 
 Logger::Logger(const std::string& filename)
 {
-	_ERROR("LOGGER(std::string)\n")
-    assert(!m_created && "ERROR::FILE_IS_ALREADY_OPENED\n" );
+    _ERROR("LOGGER(std::string)\n")
     
-    m_output.open(filename, std::ios_base::out | std::ios_base::trunc);
+    instances++;
+    filepath = filename;
     
-    if(!m_output.is_open())
+    if(!m_output.good())
     {
-        _ERROR("ERROR::CANNOT_OPEN_FILE\n")
+        _ERROR("SOMETHING WRONG")
+        fflush(0);
         exit(1);
     }
-
-    m_created = true;
-    m_output << "digraph test{\n";
     
+    m_output << "digraph test{\n";
+
     m_shift++;
     shift();
     m_output << "rankdir=TB;\n";
@@ -34,7 +33,7 @@ Logger::Logger(const std::string& filename)
 
 Logger::Logger()
 {
-    //assert(m_created && "Output was not set");
+    instances++;
     _ERROR("LOGGER()\n")
 }
 
@@ -44,16 +43,24 @@ void Logger::shift()
         m_output << "\t";
 }
 
-void Logger::close()
-{
-	m_output << "}";
-    _ERROR("CLOSING FILE\n")
-    m_output.close();
-}
 
 Logger::~Logger()
 {
 	_ERROR("~Logger()\n")
+    instances--;
+    if(!instances)
+    {
+        m_output << "}";
+        FILE* fp = fopen(filepath.c_str(), "w");
+        
+        if(!fp)
+        {
+            _ERROR("ERROR::FILE_NOT_OPENED\n")
+            return;
+        }
+
+        fprintf(fp, m_output.str().c_str());
+    }
 }
 
 
@@ -63,8 +70,6 @@ LogFunc::LogFunc(const std::string& funcname)
 	function_counter++;
 	_ERROR("LOGFUNC()\n")
 	
-	if(m_output.is_open())
-		_ERROR("-----------------Everything os OK\n")
     
 	shift();
     m_output << "subgraph cluster_" << _CHAR(function_counter) << "{\n"; 
