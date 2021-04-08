@@ -1,9 +1,7 @@
 #pragma once
 #include "logger.hpp"
-// #include <string>
 
-//#include "Log.hpp"
-
+#define NUMBER_(var,...) Number var (__VA_ARGS__ __VA_OPT__(,) {#var , __FILE__, __LINE__})
 
 extern int num_of_temporary;
 
@@ -18,27 +16,27 @@ struct prop
     const void* address = nullptr;
     int overall_number = 0;
 
-    std::string getGraphNode();
-    std::string getGraphEdge();
+    std::string getGraphNode(int value) const ;
+    std::string getGraphEdge() const;
+    std::string getGraphNodeInfo(int value, std::string add_name = "") const;
+    int getNumber() const;
 };
 
 
-class Number : Obj2log
+class Number : public Obj2log
 {
     int val;
     prop info;
-    static int m_compare_number;
-    static int m_copy_number;
 public:
-    //friend void Log::printProp(const Number& ss);
-
     static int num_of_objects;
     static int max_size;
 
-    virtual std::string createGraphNode() override   { return info.getGraphNode(); } 
-    virtual std::string createHistoryEdge() override { return info.getGraphEdge(); }
-
-    static void printStat();
+    virtual std::string createGraphNode()   const override   { return info.getGraphNode(val); } 
+    virtual std::string createHistoryEdge() const override   { return info.getGraphEdge(); }
+    virtual std::string getGraphNodeInfo(std::string add_name = "")  const override   { return info.getGraphNodeInfo(val, add_name); }
+    virtual int getNumber() const override { return info.getNumber(); }
+    
+    //static void printStat();
 
     Number(                   prop ss = {"TEMPORARY", __FILE__ , -1, num_of_objects + 1});
     Number(int num,           prop ss = {"TEMPORARY", __FILE__ , -1, num_of_objects + 1});
@@ -69,12 +67,12 @@ public:
     Number  operator--(int)               { /* Log log(__PRETTY_FUNCTION__); log.printProp(*this); */ Number temp {*this}; --(*this); return temp; }
     Number& operator= (const Number& rhs) { /* Log log(__PRETTY_FUNCTION__); log.printProp(*this); */ val = rhs.val; return *this; }
 
-    bool operator==(const Number& rhs) { m_compare_number++; /* Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return val == rhs.val; }
-    bool operator!=(const Number& rhs) { m_compare_number++; /* Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return !(*this == rhs); }
-    bool operator> (const Number& rhs) { m_compare_number++; /* Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return val > rhs.val; }
-    bool operator< (const Number& rhs) { m_compare_number++; /* Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return val < rhs.val; }
-    bool operator>=(const Number& rhs) { m_compare_number++; /* Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return !(*this < rhs);}
-    bool operator<=(const Number& rhs) { m_compare_number++; /* Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return !(*this > rhs);}
+    bool operator==(const Number& rhs) { /* m_compare_number++;  Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return val == rhs.val; }
+    bool operator!=(const Number& rhs) { /* m_compare_number++;  Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return !(*this == rhs); }
+    bool operator> (const Number& rhs) { /* m_compare_number++;  Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return val > rhs.val; }
+    bool operator< (const Number& rhs) { /* m_compare_number++;  Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return val < rhs.val; }
+    bool operator>=(const Number& rhs) { /* m_compare_number++;  Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return !(*this < rhs);}
+    bool operator<=(const Number& rhs) { /* m_compare_number++;  Log log(__PRETTY_FUNCTION__); log.function(*this, rhs); */ return !(*this > rhs);}
 
 /*
     Number& operator+=(const Number& rhs) { P("operator+=") *this = *this + rhs; return *this; }

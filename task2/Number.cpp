@@ -8,8 +8,8 @@
 int Number::num_of_objects = 0;
 int Number::max_size = 0;
 int num_of_temporary = -1;
-int Number::m_compare_number = 0;
-int Number::m_copy_number = 0;
+// int Number::m_compare_number = 0;
+// int Number::m_copy_number = 0;
 
 
 
@@ -24,17 +24,18 @@ std::string pointer2str(T value)
 }
 
 
-std::string prop::getGraphNode()
+std::string prop::getGraphNode(int value) const
 {
     std::string res = "";
 
-    res += "node_"   + _CHAR(overall_number)  + \
-    " [shape=record, label= \"{"              + \
-    " name: "        + std::string(name)      + \
-    " | number: "    + _CHAR(overall_number)  + \
-    " | address: "   + pointer2str(address)   + \
-    " | constr : "   + constructor            + \
-    "}\"]\n";
+    res += "node_"   + _CHAR(overall_number)           + \
+    " [shape=record, label= \"{"                       + \
+    " <name> name: "        + std::string(name)        + \
+    " | <value> value: "     + _CHAR(value)            + \
+    " | <number> number: "    + _CHAR(overall_number)  + \
+    " | <address> address: "   + pointer2str(address)  + \
+    " | <constr> constr : "   + constructor            + \
+    "}\"];\n";
     
     /* 
     res += "node_" + _CHAR(origin_node)       + \
@@ -43,30 +44,50 @@ std::string prop::getGraphNode()
     return res;
 }
 
-std::string prop::getGraphEdge()
+std::string prop::getGraphNodeInfo(int value, std::string add_name) const
+{
+    std::string res = "";
+
+    res += \
+    " { <name_" + add_name + "> name: " + std::string(name)      + \
+    " | <value> value: "     + _CHAR(value)                      + \
+    " | <number> number: "   + _CHAR(overall_number)             + \
+    " | <address> address: " + pointer2str(address)              + \
+    " | <constr> constr : "  + constructor                       + \
+    "}";
+
+    return res;
+}
+std::string prop::getGraphEdge() const
 {
     std::string res = "";
 
     if(origin_node != 0)
         res += "node_" + _CHAR(origin_node) + "->"   +\
         "node_" + _CHAR(overall_number) + "[style= " +\
-        "dashed]\n";
+        "dashed];\n";
 
     return res;
 }
 
-
-
-void Number::printStat()
+int prop::getNumber() const
 {
-    fprintf(stderr,"Overall compare: %d\n copy:%d\n", m_compare_number, m_copy_number);
+    return overall_number;
 }
+
+
+
+// void Number::printStat()
+// {
+//     fprintf(stderr,"Overall compare: %d\n copy:%d\n", m_compare_number, m_copy_number);
+// }
 
 Number operator+ (const Number& lhs, const Number& rhs)
 {
     //Log log(__PRETTY_FUNCTION__);
     //log.function(lhs, rhs);
     //log.summary();
+
 
     return Number(lhs.val + rhs.val);
 }
@@ -140,7 +161,7 @@ Number::Number(prop ss)
 
     info.address = this;
 
-    LogObj  obj(*this);
+    LogObj (*this);
 
 
     //Log log(__PRETTY_FUNCTION__, GREEN);
@@ -157,7 +178,7 @@ Number::Number(int num, prop ss)
 
     info.address = this;
 
-    LogObj  obj(*this);
+    LogObj (*this);
 
     //Log log(__PRETTY_FUNCTION__, GREEN);
     //log.printProp(*this);
@@ -173,7 +194,10 @@ Number::Number(double num, prop ss)
     info.overall_number = ++max_size;
     //Log log(__PRETTY_FUNCTION__, GREEN);
     //log.printProp(*this);
-
+    
+    info.address = this;
+    
+    LogObj (*this);
 }
 
 Number::Number(const char* str, prop ss)
@@ -186,6 +210,9 @@ Number::Number(const char* str, prop ss)
     //Log log(__PRETTY_FUNCTION__, GREEN);
     //log.printProp(*this);
 
+    info.address = this;
+    
+    LogObj (*this);
 }
 
 Number::Number(const Number& rhs, prop ss)
@@ -197,7 +224,10 @@ Number::Number(const Number& rhs, prop ss)
     info.current_number = ++num_of_objects;
     info.overall_number = ++max_size;;
 
-    m_copy_number++;
+    info.address = this;
+
+    LogObj (*this);
+    //m_copy_number++;
 
     //log.copy(*this, rhs);
     //log.printProp(*this);
@@ -212,7 +242,10 @@ Number::Number(const Number&& rhs)
     info.current_number = ++num_of_objects;
     info.overall_number = ++max_size;;
 
-    m_copy_number++;
+    info.address = this;
+    
+    LogObj (*this);
+    //m_copy_number++;
 
     //log.copy(*this, rhs);
     //log.printProp(*this);

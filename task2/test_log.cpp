@@ -1,11 +1,31 @@
-
+#include "Number.hpp"
 #include "logger.hpp"
 
+inline void ant(int a)
+{
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    if(a > 10)
+        ant(a - 5);
+    NUMBER_(ant_var, a);
+    return;
+}
 
-Logger mylog{"dot_test.dot"};
+inline void test_func(Number a, Number b)
+{
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj(a, b);
+    NUMBER_(BEFORE_test_func_var, 43);
+    ant(13);
+    NUMBER_(AFTER_test_func_var, 34);
+    return;
+}
 
 int main()
 {
-LogFunc lgf(__PRETTY_FUNCTION__);
+    Logger mylog{"dot_test.dot"};
+    LogFunc lgf(__PRETTY_FUNCTION__);
 
+    NUMBER_(a);
+    NUMBER_(b, 10);
+    test_func(a, b);
 }
