@@ -49,11 +49,11 @@ std::string prop::getGraphNodeInfo(int value, std::string add_name) const
     std::string res = "";
 
     res += \
-    " { <name_" + add_name + "> name: " + std::string(name)      + \
-    " | <value> value: "     + _CHAR(value)                      + \
-    " | <number> number: "   + _CHAR(overall_number)             + \
-    " | <address> address: " + pointer2str(address)              + \
-    " | <constr> constr : "  + constructor                       + \
+    " { <name_" + add_name + ">  name: "      + std::string(name)       + \
+    " | <value_" + add_name + ">  value: "    + _CHAR(value)            + \
+    " | <number_" + add_name + "> number: "   + _CHAR(overall_number)   + \
+    " | <address_" + add_name + "> address: " + pointer2str(address)    + \
+    " | <constr_" + add_name + "> constr : "  + constructor             + \
     "}";
 
     return res;
@@ -88,6 +88,8 @@ Number operator+ (const Number& lhs, const Number& rhs)
     //log.function(lhs, rhs);
     //log.summary();
 
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);
 
     return Number(lhs.val + rhs.val);
 }
@@ -96,6 +98,9 @@ Number operator- (const Number& lhs, const Number& rhs)
     //Log log(__PRETTY_FUNCTION__);
     //log.function(lhs, rhs);
     //log.summary();
+
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);;
     
     return Number(lhs.val - rhs.val);
 }
@@ -105,6 +110,9 @@ Number operator* (const Number& lhs, const Number& rhs)
     //log.function(lhs, rhs);
     //log.summary();
     
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);
+    
     return Number(lhs.val * rhs.val);
 }
 Number operator/ (const Number& lhs, const Number& rhs)
@@ -112,6 +120,9 @@ Number operator/ (const Number& lhs, const Number& rhs)
     //Log log(__PRETTY_FUNCTION__);
     //log.function(lhs, rhs);
     //log.summary();
+    
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);
     
     return Number(lhs.val / rhs.val);
 }
@@ -122,6 +133,9 @@ Number operator% (const Number& lhs, const Number& rhs)
     //log.function(lhs, rhs);
     //log.summary();
     
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);
+    
     return Number(lhs.val % rhs.val);
 }
 
@@ -131,6 +145,9 @@ Number operator& (const Number& lhs, const Number& rhs)
     //log.function(lhs, rhs);
     //log.summary();
     
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);
+    
     return Number(lhs.val & rhs.val);
 }
 
@@ -139,6 +156,9 @@ Number operator|(const Number& lhs, const Number& rhs)
     //Log log(__PRETTY_FUNCTION__);
     //log.function(lhs, rhs);
     //log.summary();
+    
+    LogFunc lgf(__PRETTY_FUNCTION__);
+    LogObj  lgo(lhs, rhs);
     
     return Number( lhs.val | rhs.val);
 }
@@ -222,7 +242,8 @@ Number::Number(const Number& rhs, prop ss)
     //Log log(__PRETTY_FUNCTION__, MAGENTA);
     info.constructor = __PRETTY_FUNCTION__;
     info.current_number = ++num_of_objects;
-    info.overall_number = ++max_size;;
+    info.overall_number = ++max_size;
+    info.origin_node = rhs.info.overall_number;
 
     info.address = this;
 

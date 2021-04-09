@@ -27,5 +27,10 @@ int main()
 
     NUMBER_(a);
     NUMBER_(b, 10);
+
+    NUMBER_(c, a + b);
+    b = a - c;
+
     test_func(a, b);
+    NUMBER_(ddddddd, a);
 }

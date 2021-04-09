@@ -72,7 +72,6 @@ Logger::~Logger()
 
 LogFunc::LogFunc(const std::string& funcname)
 {
-    curr_function = function_counter;
     
     if(!current_function_name.empty())
         previous_function_name = current_function_name;
@@ -95,10 +94,14 @@ LogFunc::LogFunc(const std::string& funcname)
 
     }
 
-	_ERROR("LOGFUNC()\n")
+    curr_function = function_counter;
+	
+    _ERROR("LOGFUNC() ----->")
+    _ERROR((current_function_name + "\n").c_str());
+
 	
 	shift();
-    m_output << "subgraph cluster_" << _CHAR(function_counter) << "{\n"; 
+    m_output << "subgraph " << current_cluster_function_name << "{\n"; 
     
     m_shift++;
 
@@ -132,6 +135,9 @@ LogFunc::~LogFunc()
         m_output << "label= \""<< previous_function_name << "\";\n";
 
         curr_function = previous_function;
+
+        current_function_name = previous_function_name;
+        current_cluster_function_name = previous_cluster_function_name;
     }
     _ERROR("~LOGFUNC()\n");
 }
