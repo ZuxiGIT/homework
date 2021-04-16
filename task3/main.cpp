@@ -4,8 +4,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#define width   1024
-#define height  1024
+#define width   768
+#define height  768
 #define Vw      1
 #define Vh      1
 #define C2Vd    1
@@ -21,14 +21,20 @@ inline void setPixel(sf::Uint8* framebuffer, unsigned int x, unsigned int y, sf:
 
 inline sf::Vector3f CanvasToViewPort(unsigned int x, unsigned int y)
 {
-    return sf::Vector3f (((float)x * (float)(Vw) / width - 0.5f), ((float)y * (float)(Vh) / height - 0.5f), C2Vd);
+    return sf::Vector3f (((float)x * (float)(Vw) / width - 0.5f), (-(float)y * (float)(Vh) / height + 0.5f), C2Vd);
 }
 
-inline sf::Vector3f ray_cast( const sf::Vector3f& origin, const sf::Vector3f& direction, const Sphere& sph)
+inline sf::Vector3f ray_cast( const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects)
 {
-    //float sphere_dist = 9999999;
-    if(!sph.ray_intersect(origin, direction))
-        return sf::Vector3f(0.2f, 0.7f, 0.8f);
+    float max_dist = (float)99999999;
+    Sphere closest_sphere;
+
+
+    for(size_t i = 0; i < objects.size(); i++)
+        if(!objects[i].ray_intersect(origin, direction))
+            //return objects[i].getColor();
+            return sf::Vector3f(0.2f, 0.7f, 0.8f);
+    
     return sf::Vector3f(0.4f, 0.4f, 0.3f);
 }
 
@@ -36,7 +42,15 @@ inline sf::Vector3f ray_cast( const sf::Vector3f& origin, const sf::Vector3f& di
 
 inline sf::Uint8* renderer()
 {
-    // /const double fov = M_PI / 6;
+    // const double fov = M_PI / 6;
+
+    ObjectManager& objects = ObjectManager::createManager();
+    
+    objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
+    //objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, sf::Color::Red} );
+    //objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, sf::Color::Blue} );
+    //objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, sf::Color::Green} );   
+
 
     static sf::Uint8 framebuffer [width * height * 4];
     
@@ -45,10 +59,14 @@ inline sf::Uint8* renderer()
         {
             sf::Vector3f dir  = CanvasToViewPort(column, line);
             //fprintf(stderr, "direction is %lf %lf %lf\n", dir.x, dir.y, dir.z);
-            sf::Vector3f res = ray_cast(sf::Vector3f(0,0,0), dir, Sphere(sf::Vector3f(0, 0, 40), 5));
+            sf::Vector3f res = ray_cast(sf::Vector3f(0,0,0), dir, objects); 
             setPixel(framebuffer, column, line, res);
         }
     
+    for (size_t line = 0; line < height; line++)
+        setPixel(framebuffer, width / 2, line, sf::Vector3f(255, 0,0));
+    for (size_t column = 0; column < width; column++)
+        setPixel(framebuffer, column, height / 2, sf::Vector3f(255, 0,0));
     return framebuffer;
 }
 
@@ -58,7 +76,7 @@ inline sf::Uint8* renderer()
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1024, 768), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(width, height), "SFML works!");
     window.setFramerateLimit(60);
 
     sf::Texture texture;
@@ -80,7 +98,6 @@ int main()
     if(!fp)
         fprintf(stderr, "failed to open file\n");
 
-    // /ofs << "P6\n" << width << " " << height << "\n255\n";
     fprintf(fp, "P6\n%d %d\n255\n", width, height);
 
     for (size_t line = 0; line < height; line++)
