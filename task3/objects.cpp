@@ -7,6 +7,17 @@ inline float dot(const sf::Vector3f& lhs, const sf::Vector3f& rhs)
     return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
 }
 
+inline float length(const sf::Vector3f& obj)
+{
+    return sqrtf(obj.x * obj.x + obj.y * obj.y + obj.z * obj.z);
+}
+
+inline sf::Vector3f normalize(sf::Vector3f& obj)
+{
+    float len = length(obj);
+    obj /= len;
+    return obj;
+}
 
 Sphere::Sphere(sf::Vector3f center, float radius, sf::Color color)
 : 
@@ -59,4 +70,16 @@ ObjectManager::~ObjectManager()
 {
     for(size_t i = 0; i < m_count; i++)
         delete m_objects[i];
+}
+
+LightManager::~LightManager()
+{
+    for(size_t i = 0; i < m_count; i ++)
+        delete m_lights[i];
+}
+
+void LightManager::add(Light* obj)
+{
+    m_count++;
+    m_lights.push_back(obj);
 }

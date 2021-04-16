@@ -10,6 +10,33 @@
 #define Vh      1
 #define C2Vd    1
 
+inline float dot(const sf::Vector3f& lhs, const sf::Vector3f& rhs);
+inline float length(const sf::Vector3f& obj);
+
+inline float ComputeLighting(sf::Vector3f& point, sf::Vector3f& normal, const LightManager& lights)
+{
+    float intensity = 0;
+
+    for(size_t i = 0; i < lights.size(); i ++)
+        if (lights[i].m_type == Light::Type::AMBIENT)
+            intensity += lights[i].m_intensity;
+        else
+        {   
+            sf::Vector3f L = {};
+            if (lights[i].m_type == Light::Type::POINT)
+                L = lights[i].m_position - point;
+            else
+                L = -lights[i].m_direction;
+
+            float cos_alpha = dot(L, normal) / (length(L) * length(normal));
+            if(cos_alpha > 0)
+                intensity += lights[i].m_intensity * cos_alpha;  
+        }
+    return intensity;
+}
+
+
+
 
 inline void setPixel(sf::Uint8* framebuffer, unsigned int x, unsigned int y, sf::Vector3f pixel)
 {
@@ -31,11 +58,11 @@ inline sf::Vector3f ray_cast( const sf::Vector3f& origin, const sf::Vector3f& di
 
 
     for(size_t i = 0; i < objects.size(); i++)
-        if(!objects[i].ray_intersect(origin, direction))
-            //return objects[i].getColor();
-            return sf::Vector3f(0.2f, 0.7f, 0.8f);
+        if(objects[i].ray_intersect(origin, direction)) 
+            return objects[i].getColor();
+            //return sf::Vector3f(1.f, 1.f, 0.f);
     
-    return sf::Vector3f(0.4f, 0.4f, 0.3f);
+    return sf::Vector3f(0.2f, 0.7f, 0.8f);
 }
 
 
@@ -46,10 +73,11 @@ inline sf::Uint8* renderer()
 
     ObjectManager& objects = ObjectManager::createManager();
     
-    objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
-    //objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, sf::Color::Red} );
-    //objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, sf::Color::Blue} );
-    //objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, sf::Color::Green} );   
+    //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
+    objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, sf::Color::Red} );
+    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, sf::Color::Blue} );
+    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, sf::Color::Green} );
+    objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, sf::Color::Yellow} );   
 
 
     static sf::Uint8 framebuffer [width * height * 4];
@@ -64,9 +92,9 @@ inline sf::Uint8* renderer()
         }
     
     for (size_t line = 0; line < height; line++)
-        setPixel(framebuffer, width / 2, line, sf::Vector3f(255, 0,0));
+        setPixel(framebuffer, width / 2, line, sf::Vector3f(0, 0,0));
     for (size_t column = 0; column < width; column++)
-        setPixel(framebuffer, column, height / 2, sf::Vector3f(255, 0,0));
+        setPixel(framebuffer, column, height / 2, sf::Vector3f(0, 0,0));
     return framebuffer;
 }
 

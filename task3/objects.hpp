@@ -32,7 +32,7 @@ class Sphere : public Drawable
     Sphere& operator= (const Sphere&) = delete;
 
     virtual bool ray_intersect (const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
-    virtual sf::Vector3f getColor() const override { return sf::Vector3f(m_color.r, m_color.g, m_color.b); }
+    virtual sf::Vector3f getColor() const override { return sf::Vector3f(m_color.r / 255, m_color.g / 255, m_color.b / 255); }
 
 };
 
@@ -55,8 +55,46 @@ public:
     unsigned int size() const { return m_count; }
     
     Drawable& operator[](size_t index) { return *m_objects[index]; }
-    
     const Drawable& operator[] (size_t index) const  { return *m_objects[index]; }
 
     void add(Drawable* obj);
+};
+
+
+struct Light
+{
+
+    enum class Type
+    {
+        AMBIENT,
+        POINT,
+        DIRECTIONAL
+    };
+
+    Type m_type;
+    union
+    {
+        sf::Vector3f m_direction;
+        sf::Vector3f m_position;
+    };
+    float m_intensity;
+
+    Light(Type type, float intensity, sf::Vector3f dir_or_pos = sf::Vector3f(0, 0, 0));
+};
+
+class LightManager
+{
+    unsigned int m_count = 0;
+    std::vector<Light*> m_lights = {};
+
+    public:
+
+    LightManager() = default;
+    ~LightManager();
+
+    unsigned int size() const { return m_count; }
+    void add(Light* obj);
+
+    Light& operator[](int index) { return *m_lights[index]; }
+    const Light& operator[](int index) const { return *m_lights[index]; }
 };
