@@ -262,6 +262,7 @@ Number::Number(const Number&& rhs)
     info.constructor = __PRETTY_FUNCTION__;
     info.current_number = ++num_of_objects;
     info.overall_number = ++max_size;;
+    info.origin_node = rhs.info.overall_number;
 
     info.address = this;
     

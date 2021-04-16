@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <iostream>
 #include <typeinfo>
+#include <utility>
 
 template<int N>
 struct Print{};
@@ -227,13 +228,23 @@ inline void MyPrintf(const char* s, ...)
 
 
 
+
+template <typename T>
+struct has_myFunc
+{
+    static int detect(...);   // fake
+    template<typename U> static decltype(std::declval<U>().myFunc(42)) detect (const U&); // detector
+
+    static constexpr bool value = std::is_same<void, decltype(detect(std::declval<T>()))>::value;
+};
+
 // int fac = Print<factorial<10>::value>::mew;
 // int fib = Print<fibbonachi<5>::value>::mew;
 // int isP = Print<isPrime<6>::value>::mew;
 // int euc = Print<euclid<30, 12>::value>::mew;
 inline void PrintFError(const char * format, ...) 
 {
-    char buffer[256];
+    char buffer[256] = {};
     va_list args;
     va_start(args, format);
     vsprintf(buffer,format, args);
@@ -242,24 +253,34 @@ inline void PrintFError(const char * format, ...)
 }
 
 
-// int main()
-// { 
-//     MyPrintf("test Int #i Double #d String #s anothwe texxt afteer\n", 12, 3.14, "STRING_TEXTX");
-//     // int a[2][2] = {{1, 2}, {3, 4}};
-//     // int b[2][2] = {{5, 6}, {7, 8}};
+class myClass
+{
+    myClass(long ff) { printf("myClass(long) CONSTR\n"); } ;
+    myClass() { printf("DEFAULT CONSTR\n"); };
+public:
+    void myFunc(int x) { return;} 
+};
 
-//     // std::cout <<typeid(long long).name();
-//     // Printf("absdb # asfaf # # #", 12, "hello", "from", 12343);
-//     // matSum<int, 2, 2>::mat_Sum(a, b);
-    
-//     // for(int j = 0; j < 2;j ++)
-//     // {       
-//     //     for(int i = 0; i < 2;i ++)
-//     //         printf("%2d ", a[j][i]);
-//     //     printf("\n");
-//     // }
 
-//     getchar();
+int main()
+{ 
+    //Print<has_myFunc<myClass>::value>::meow;
+    MyPrintf("test Int #i Double #d String #s anothwe texxt afteer\n", 12, 3.14, "STRING_TEXTX");
+    // int a[2][2] = {{1, 2}, {3, 4}};
+    // int b[2][2] = {{5, 6}, {7, 8}};
+
+    // std::cout <<typeid(long long).name();
+    // Printf("absdb # asfaf # # #", 12, "hello", "from", 12343);
+    // matSum<int, 2, 2>::mat_Sum(a, b);
     
-//     return 0;
-// }
+    // for(int j = 0; j < 2;j ++)
+    // {       
+    //     for(int i = 0; i < 2;i ++)
+    //         printf("%2d ", a[j][i]);
+    //     printf("\n");
+    // }
+
+    getchar();
+    
+    return 0;
+}

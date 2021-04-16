@@ -67,6 +67,7 @@ Logger::~Logger()
         }
 
         fprintf(fp, m_output.str().c_str());
+        fclose(fp);
     }
 }
 
@@ -135,7 +136,6 @@ LogFunc::~LogFunc()
         m_output << "label= \""<< previous_function_name << "\";\n";
 
         curr_function = previous_function;
-
         current_function_name = previous_function_name;
         current_cluster_function_name = previous_cluster_function_name;
     }
