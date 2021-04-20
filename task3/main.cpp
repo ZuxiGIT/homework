@@ -5,6 +5,14 @@
 #include "objects.hpp"
 #include "functions.inl"
 
+#define _GET_RETURN_INTERSECT(_min_dist, _obj_pointer, _function_call)  \
+                                                                        \
+sf::Vector2f _returned_vector = _function_call;                         \
+_min_dist = _returned_vector.x;                                         \
+union { float fl; const Drawable* ptr; } _temp;                         \
+_temp.fl = _returned_vector.y;                                          \
+_obj_pointer = _temp.ptr;
+
 #define width   768
 #define height  768
 #define Vw      1
@@ -12,8 +20,42 @@
 #define C2Vd    1
 
 
+inline sf::Vector2f closestIntersection(const sf::Vector3f& origin, const sf::Vector3f& direction, float t_min, float t_max, const ObjectManager& objects)
+{
+    float min_dist = _INFINITY;
+    
+    union{ float fl; const Drawable* ptr; }  closest_obj;
+    
+    closest_obj.ptr = nullptr;
 
-inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& normal, const sf::Vector3f& direction, Material prop, const LightManager& lights)
+    for(size_t i = 0; i < objects.size(); i++)
+    {
+        sf::Vector3f solutions = objects[i].ray_intersect(origin, direction);
+        
+        if(solutions.x < _EPS)
+            continue;
+
+        float t1 = solutions.y;
+        float t2 = solutions.z;
+
+        if(t1 < min_dist && t1 > t_min && t1 < t_max)
+        {
+            min_dist = t1;
+            closest_obj.ptr = &objects[i];
+        }
+
+        if(t2 < min_dist && t2 > t_min && t2 < t_max)
+        {
+            min_dist = t2;
+            closest_obj.ptr = &objects[i];
+        }
+    }
+
+    return sf::Vector2f(min_dist, closest_obj.fl);
+}
+
+
+inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& normal, const sf::Vector3f& direction, Material prop, const ObjectManager& objects,  const LightManager& lights)
 {
     float intensity = 0;
 
@@ -23,14 +65,31 @@ inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& norm
         else
         {   
             sf::Vector3f L = {};
-
+            float t_max = {};
             if (lights[i].m_type == Light::Type::POINT)
+            {
                 L = lights[i].m_position - point;
+                t_max = 1;
+            }
             else
+            {
                 L = -lights[i].m_direction;
+                t_max = _INFINITY;
+            }
+
+
+            //check for shadows
+            const Drawable* shadow_obj = nullptr;
+            float shadow_obj_dist = {};
+            
+             _GET_RETURN_INTERSECT(shadow_obj_dist, shadow_obj, closestIntersection(point, L, 0.001f, t_max, objects));
+
+            if(shadow_obj != nullptr)
+                continue;
 
             //diffuse
             float cos_alpha = dot(L, normal) / (length(L) * length(normal));
+            
             if(cos_alpha > 0)
                 intensity += lights[i].m_intensity * cos_alpha;  
 
@@ -38,13 +97,17 @@ inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& norm
             if( prop.specular != -1)
             {
                 sf::Vector3f R = 2.f * normal * dot(normal, L) - L;
+                
                 float cos_beta = dot(normalize(R), normalize(direction));
+                
                 if(cos_beta > 0)
                     intensity += lights[i].m_intensity * pow(cos_beta , static_cast<float>(prop.specular));
             }
         }
     return intensity;
 }
+
+
 
 
 
@@ -62,43 +125,22 @@ inline sf::Vector3f CanvasToViewPort(unsigned int x, unsigned int y)
     return sf::Vector3f (((float)x * (float)(Vw) / width - 0.5f), (-(float)y * (float)(Vh) / height + 0.5f), C2Vd);
 }
 
-inline Color ray_cast( const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects, const LightManager& lights)
+inline Color ray_cast(const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects, const LightManager& lights)
 {
-    float min_dist = _INFINITY;
+    float min_dist = {};
     const Drawable* closest_obj = nullptr;
 
+    _GET_RETURN_INTERSECT(min_dist, closest_obj, closestIntersection(origin, direction, 1, _INFINITY, objects));
 
-    for(size_t i = 0; i < objects.size(); i++)
-    {
-        sf::Vector3f solutions = objects[i].ray_intersect(origin, direction);
-        
-        if(solutions.x < _EPS)
-            continue;
-        float t1 = solutions.y;
-        float t2 = solutions.z;
-
-        if(t1 < min_dist && t1 > 1)
-        {
-            min_dist = t1;
-            closest_obj = &objects[i];
-        }
-
-        if(t2 < min_dist && t2 > 1)
-        {
-            min_dist = t2;
-            closest_obj = &objects[i];
-        }
-    }
-
-    if(!closest_obj)
+    if(closest_obj == nullptr)
         return sf::Vector3f(0.2f, 0.7f, 0.8f);
 
-    sf::Vector3f point = origin + min_dist * direction;
-    sf::Vector3f normal = point - closest_obj->getPosition();
+    sf::Vector3f point = origin + min_dist * direction; // point intersection
+    sf::Vector3f normal = closest_obj->getNormal(point); // normal at point intersection
 
     normal = normalize(normal);
     
-    return closest_obj->getColor() * ComputeLighting(point, normal, -direction, closest_obj->m_properties, lights);
+    return closest_obj->getColor() * ComputeLighting(point, normal, -direction, closest_obj->m_properties, objects, lights) * 0.454545f;
 }
 
 
@@ -145,6 +187,7 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
 
 int main()
 {
+    fprintf(stderr, "sizeof(float) = %u bytes\nsizeof(double) = %u bytes\n", sizeof(float), sizeof(double));
     sf::RenderWindow window(sf::VideoMode(width, height), "SFML works!");
     window.setFramerateLimit(60);
 
@@ -161,11 +204,12 @@ int main()
     objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, {500}, sf::Color::Red} );
     objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500}, sf::Color::Blue} );
     objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10}, sf::Color::Green} );
-    objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
+    objects.add(new Plane  {sf::Vector3f(0, 2, 0), sf::Vector3f(0, 1, 0), {1}, sf::Color::Yellow} );
+    // objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
 
     lights.add(new Light {Light::Type::AMBIENT, 0.2f});
-    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 1, 0)});
-    lights.add(new Light {Light::Type::DIRECTIONAL, 0.2f, sf::Vector3f(1, 4, 4)});
+    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 3, 0)});
+    //lights.add(new Light {Light::Type::DIRECTIONAL, 0.2f, sf::Vector3f(1, -4, 4)});
 
 
     sf::Uint8* frame = renderer(objects, lights);

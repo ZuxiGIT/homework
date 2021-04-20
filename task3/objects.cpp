@@ -47,7 +47,28 @@ sf::Vector3f Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3
     #endif
 }
 
+Plane::Plane(sf::Vector3f plane_point, sf::Vector3f plane_normal, Material properties, sf::Color color)
+:
+Drawable(plane_point, color, properties),
+m_plane_normal(plane_normal)
+{}
 
+sf::Vector3f Plane::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const
+{
+
+    //fprintf(stderr, " (%f, %f, %f) - (%f, %f, %f) ", origin.x, origin.y, origin.z, m_position.x , m_plane_point.y, m_plane_point.z);
+    float a = dot(origin - m_position, m_plane_normal);
+    float b = dot(direction, m_plane_normal);
+    //fprintf(stderr, " t = %f / %f\n", a , b);
+    float t = - a / b;
+    if( t > _INFINITY * _INFINITY)
+    {
+        fprintf(stderr, "Plane intersection< but t > _INFINITY * _INFINITY, t = %f\n", t);
+        return sf::Vector3f(0, _INFINITY, _INFINITY);
+    }
+    //fprintf(stderr, "Plane intersection< but t (%f)< _INFINITY\n", t);
+    return sf::Vector3f(1, t, t);
+}
 
 void ObjectManager::add(Drawable* obj)
 {
