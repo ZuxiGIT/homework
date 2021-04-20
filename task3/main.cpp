@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <SFML/Graphics.hpp>
-#include "objects.hpp"
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "objects.hpp"
+#include "functions.inl"
 
 #define width   768
 #define height  768
@@ -10,10 +11,9 @@
 #define Vh      1
 #define C2Vd    1
 
-inline float dot(const sf::Vector3f& lhs, const sf::Vector3f& rhs);
-inline float length(const sf::Vector3f& obj);
 
-inline float ComputeLighting(sf::Vector3f& point, sf::Vector3f& normal, const LightManager& lights)
+
+inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& normal, const sf::Vector3f& direction, Material prop, const LightManager& lights)
 {
     float intensity = 0;
 
@@ -23,14 +23,25 @@ inline float ComputeLighting(sf::Vector3f& point, sf::Vector3f& normal, const Li
         else
         {   
             sf::Vector3f L = {};
+
             if (lights[i].m_type == Light::Type::POINT)
                 L = lights[i].m_position - point;
             else
                 L = -lights[i].m_direction;
 
+            //diffuse
             float cos_alpha = dot(L, normal) / (length(L) * length(normal));
             if(cos_alpha > 0)
                 intensity += lights[i].m_intensity * cos_alpha;  
+
+            //specular
+            if( prop.specular != -1)
+            {
+                sf::Vector3f R = 2.f * normal * dot(normal, L) - L;
+                float cos_beta = dot(normalize(R), normalize(direction));
+                if(cos_beta > 0)
+                    intensity += lights[i].m_intensity * pow(cos_beta , static_cast<float>(prop.specular));
+            }
         }
     return intensity;
 }
@@ -38,11 +49,11 @@ inline float ComputeLighting(sf::Vector3f& point, sf::Vector3f& normal, const Li
 
 
 
-inline void setPixel(sf::Uint8* framebuffer, unsigned int x, unsigned int y, sf::Vector3f pixel)
+inline void setPixel(sf::Uint8* framebuffer, unsigned int x, unsigned int y, Color pixel)
 {
-    framebuffer[(y * width + x) * 4]     = (unsigned char) (255 * pixel.x);
-    framebuffer[(y * width + x) * 4 + 1] = (unsigned char) (255 * pixel.y);
-    framebuffer[(y * width + x) * 4 + 2] = (unsigned char) (255 * pixel.z);
+    framebuffer[(y * width + x) * 4]     = (unsigned char) (255 * pixel.r);
+    framebuffer[(y * width + x) * 4 + 1] = (unsigned char) (255 * pixel.g);
+    framebuffer[(y * width + x) * 4 + 2] = (unsigned char) (255 * pixel.b);
     framebuffer[(y * width + x) * 4 + 3] = (unsigned char) (255);
 }
 
@@ -51,43 +62,73 @@ inline sf::Vector3f CanvasToViewPort(unsigned int x, unsigned int y)
     return sf::Vector3f (((float)x * (float)(Vw) / width - 0.5f), (-(float)y * (float)(Vh) / height + 0.5f), C2Vd);
 }
 
-inline sf::Vector3f ray_cast( const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects)
+inline Color ray_cast( const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects, const LightManager& lights)
 {
-    float max_dist = (float)99999999;
-    Sphere closest_sphere;
+    float min_dist = _INFINITY;
+    const Drawable* closest_obj = nullptr;
 
 
     for(size_t i = 0; i < objects.size(); i++)
-        if(objects[i].ray_intersect(origin, direction)) 
-            return objects[i].getColor();
-            //return sf::Vector3f(1.f, 1.f, 0.f);
+    {
+        sf::Vector3f solutions = objects[i].ray_intersect(origin, direction);
+        
+        if(solutions.x < _EPS)
+            continue;
+        float t1 = solutions.y;
+        float t2 = solutions.z;
+
+        if(t1 < min_dist && t1 > 1)
+        {
+            min_dist = t1;
+            closest_obj = &objects[i];
+        }
+
+        if(t2 < min_dist && t2 > 1)
+        {
+            min_dist = t2;
+            closest_obj = &objects[i];
+        }
+    }
+
+    if(!closest_obj)
+        return sf::Vector3f(0.2f, 0.7f, 0.8f);
+
+    sf::Vector3f point = origin + min_dist * direction;
+    sf::Vector3f normal = point - closest_obj->getPosition();
+
+    normal = normalize(normal);
     
-    return sf::Vector3f(0.2f, 0.7f, 0.8f);
+    return closest_obj->getColor() * ComputeLighting(point, normal, -direction, closest_obj->m_properties, lights);
 }
 
 
 
-inline sf::Uint8* renderer()
+inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lights)
 {
     // const double fov = M_PI / 6;
-
-    ObjectManager& objects = ObjectManager::createManager();
-    
-    //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
-    objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, sf::Color::Red} );
-    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, sf::Color::Blue} );
-    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, sf::Color::Green} );
-    objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, sf::Color::Yellow} );   
-
 
     static sf::Uint8 framebuffer [width * height * 4];
     
     for (size_t line = 0; line < height; line++)
         for(size_t column = 0; column < width; column++)
         {
+            #if 0
+            if(line % 2 == 0 && column % 2 == 0)
+            {
+                sf::Vector3f dir  = CanvasToViewPort(column, line);
+                //fprintf(stderr, "direction is %lf %lf %lf\n", dir.x, dir.y, dir.z);
+                sf::Vector3f res = ray_cast(sf::Vector3f(0,0,0), dir, objects, lights); 
+                setPixel(framebuffer, column, line, res);
+                setPixel(framebuffer, column + 1, line, res);
+                setPixel(framebuffer, column, line + 1, res);
+                setPixel(framebuffer, column + 1, line + 1, res);
+            }
+            #endif
+
             sf::Vector3f dir  = CanvasToViewPort(column, line);
             //fprintf(stderr, "direction is %lf %lf %lf\n", dir.x, dir.y, dir.z);
-            sf::Vector3f res = ray_cast(sf::Vector3f(0,0,0), dir, objects); 
+            sf::Vector3f res = ray_cast(sf::Vector3f(0,0,0), dir, objects, lights);
+            
             setPixel(framebuffer, column, line, res);
         }
     
@@ -111,7 +152,23 @@ int main()
     sf::Sprite sprite;
     
     texture.create(width, height);
-    sf::Uint8* frame = renderer();
+
+    ObjectManager& objects = ObjectManager::createManager();
+    LightManager lights = {};
+
+    
+    //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
+    objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, {500}, sf::Color::Red} );
+    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500}, sf::Color::Blue} );
+    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10}, sf::Color::Green} );
+    objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
+
+    lights.add(new Light {Light::Type::AMBIENT, 0.2f});
+    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 1, 0)});
+    lights.add(new Light {Light::Type::DIRECTIONAL, 0.2f, sf::Vector3f(1, 4, 4)});
+
+
+    sf::Uint8* frame = renderer(objects, lights);
     texture.update(frame);
     sprite.setTexture(texture, true);
 

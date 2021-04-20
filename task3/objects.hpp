@@ -4,13 +4,73 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <vector>
 
+const float _INFINITY = static_cast<float>(0xDEADBEEF);
+const float _EPS = static_cast<float>(1e-10);
 
-
-class Drawable
+struct Color
 {
-public:
-    virtual bool ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const = 0;
-    virtual sf::Vector3f getColor() const = 0;
+    float r = 0;
+    float g = 0;
+    float b = 0;
+
+    Color() = default;
+    
+    Color( float R, float G, float B){ 
+                                        r = R > 1 ? 1 : R;
+                                        g = G > 1 ? 1 : G;
+                                        b = B > 1 ? 1 : B;
+                                     }
+    
+    Color( const sf::Vector3f& that){  
+                                        r = that.x  > 1 ? 1 : that.x;
+                                        g = that.y  > 1 ? 1 : that.y;
+                                        b = that.z  > 1 ? 1 : that.z;
+                                    }
+    Color( const sf::Color& that) { r = that.r / 255; g = that.g / 255; b = that.b / 255; }
+    
+    Color(const Color& obj) { r = obj.r; g = obj.g; b = obj.b; }
+    
+    Color& operator=(const Color& obj) { r = obj.r; g = obj.g; b = obj.b; return *this; }
+    
+    ~Color() = default;
+    
+    operator sf::Vector3f() const { return sf::Vector3f( r, g, b); } 
+};
+
+template<typename T>
+inline Color operator*(T num, const Color& rhs)
+{
+    return Color (rhs.r * num, rhs.g * num, rhs.b * num); 
+}
+template<typename T>
+inline Color operator*(const Color& rhs, T num)
+{
+    return num * rhs;
+}
+template<typename T>
+inline Color operator/(const Color& rhs, T num)
+{
+    return Color( rhs.r / num, rhs.g / num, rhs.b / num);
+}
+
+
+struct Material
+{
+    int specular = 1;
+};
+
+struct  Drawable
+{
+    sf::Vector3f m_position = {};
+    Material m_properties = {};
+    Color m_color = {};
+
+    Drawable(sf::Vector3f position, sf::Color color, Material properties) : m_position(position), m_properties(properties), m_color(color) {}
+
+    virtual sf::Vector3f ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const = 0;
+    sf::Vector3f getColor() const  { return m_color; }
+    sf::Vector3f getPosition() const { return m_position; }
+
     virtual ~Drawable() {}
 
 };
@@ -19,21 +79,17 @@ public:
 
 class Sphere : public Drawable
 {
-    sf::Vector3f m_center = {};
     float m_radius = 0;
-    sf::Color m_color = {};
-
     public:
 
-    explicit Sphere(sf::Vector3f position, float radius, sf::Color color = sf::Color::Green);
+    explicit Sphere(sf::Vector3f position, float radius, Material properties, sf::Color color = sf::Color::Green);
     Sphere() = default;
 
     Sphere(const Sphere&) = delete;
     Sphere& operator= (const Sphere&) = delete;
 
-    virtual bool ray_intersect (const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
-    virtual sf::Vector3f getColor() const override { return sf::Vector3f(m_color.r / 255, m_color.g / 255, m_color.b / 255); }
-
+    virtual sf::Vector3f ray_intersect (const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
+    virtual ~Sphere() override {}
 };
 
 

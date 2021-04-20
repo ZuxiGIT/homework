@@ -1,34 +1,21 @@
 #include "objects.hpp"
+#include "functions.inl"
 #include <stdio.h>
 #include <cmath>
 
-inline float dot(const sf::Vector3f& lhs, const sf::Vector3f& rhs)
-{
-    return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z;
-}
 
-inline float length(const sf::Vector3f& obj)
-{
-    return sqrtf(obj.x * obj.x + obj.y * obj.y + obj.z * obj.z);
-}
 
-inline sf::Vector3f normalize(sf::Vector3f& obj)
-{
-    float len = length(obj);
-    obj /= len;
-    return obj;
-}
 
-Sphere::Sphere(sf::Vector3f center, float radius, sf::Color color)
+
+Sphere::Sphere(sf::Vector3f center, float radius, Material properties, sf::Color color)
 : 
-m_center(center),
-m_radius(radius),
-m_color(color)
+Drawable(center, color, properties),
+m_radius(radius)
 {}
 
-bool Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const
+sf::Vector3f Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const
 {
-    sf::Vector3f OC = origin - m_center;
+    sf::Vector3f OC = origin - m_position;
 
     
     float k1 = dot(direction, direction);
@@ -37,25 +24,27 @@ bool Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direc
     
     float discr = k2 * k2 - 4 * k1 * k3;
     
-    if(discr < 0) return false;
+    if(discr < 0) return sf::Vector3f(0, _INFINITY, _INFINITY);
     
     float t1 = (-k2 + sqrtf(discr)) / ( 2 * k1);
     float t2 = (-k2 - sqrtf(discr)) / ( 2 * k1);
     
-    
+    return sf::Vector3f(1, t1, t2);
+
+    #if 0
     if( t2 > 1 && t1 > 1)
     {
-        #if 0
         if(direction.x == 0 && direction.y == 0)
         {    
             fprintf(stderr, "OC (%f, %f, %f)\n", OC.x, OC.y, OC.z);
             fprintf(stderr, "Solutions: t1 = %f t2 = %f Direction (%f, %f, %f)   ", t1, t2, direction.x, direction.y, direction.z);
             fprintf(stderr, "Points: (%f, %f, %f) (%f, %f, %f)\n", (t1*direction).x , (t1*direction).y, (t1*direction).z, (t2*direction).x, (t2*direction).y, (t2*direction).z);
         }
-        #endif
+        
         return true;
     }
     return false;
+    #endif
 }
 
 
@@ -71,6 +60,16 @@ ObjectManager::~ObjectManager()
     for(size_t i = 0; i < m_count; i++)
         delete m_objects[i];
 }
+
+Light::Light(Type type, float intensity, sf::Vector3f dir_or_pos)
+:
+m_type(type),
+m_intensity(intensity)
+{
+    if(m_type != Light::Type::AMBIENT)
+        m_position = dir_or_pos;
+}
+
 
 LightManager::~LightManager()
 {
