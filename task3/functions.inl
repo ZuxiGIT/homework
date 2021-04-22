@@ -12,6 +12,14 @@ inline float length(const sf::Vector3f& obj)
     return sqrtf(obj.x * obj.x + obj.y * obj.y + obj.z * obj.z);
 }
 
+inline sf::Vector3f cross(sf::Vector3f a, sf::Vector3f b)
+{
+    float i = 0, j = 0, k = 0;
+    i = a.y*b.z - a.z*b.y;
+    j = a.z*b.x - a.x*b.z;
+    k = a.x*b.y - a.y*b.x;
+    return sf::Vector3f(i, j, k);
+}
 inline sf::Vector3f normalize(const sf::Vector3f& obj)
 {
     float len = length(obj);

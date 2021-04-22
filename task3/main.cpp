@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "camera.hpp"
 #include "objects.hpp"
 #include "functions.inl"
 
@@ -108,10 +109,6 @@ inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& norm
 }
 
 
-
-
-
-
 inline void setPixel(sf::Uint8* framebuffer, unsigned int x, unsigned int y, Color pixel)
 {
     framebuffer[(y * width + x) * 4]     = (unsigned char) (255 * pixel.r);
@@ -122,7 +119,7 @@ inline void setPixel(sf::Uint8* framebuffer, unsigned int x, unsigned int y, Col
 
 inline sf::Vector3f CanvasToViewPort(unsigned int x, unsigned int y)
 {
-    return sf::Vector3f (((float)x * (float)(Vw) / width - 0.5f), (-(float)y * (float)(Vh) / height + 0.5f), C2Vd);
+    return sf::Vector3f (((float)x /** (float)(Vw)*/ / width - 0.5f), (-(float)y /** (float)(Vh)*/ / height + 0.5f), C2Vd);
 }
 
 inline Color ray_cast(const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects, const LightManager& lights)
@@ -187,6 +184,23 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
 
 int main()
 {
+
+
+
+    Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f,1.f));
+    camera.setCanvasSize(width, height);
+
+#if 1
+    sf::Vector3f a = camera.CanvasToViewPort(738, 738); 
+    sf::Vector3f b = CanvasToViewPort(738, 738);
+    
+    if( a != b)
+    {
+        fprintf(stderr, "Not equal (%f, %f, %f) != (%f, %f, %f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
+        exit(1);
+    }
+#endif
+
     fprintf(stderr, "sizeof(float) = %u bytes\nsizeof(double) = %u bytes\n", sizeof(float), sizeof(double));
     sf::RenderWindow window(sf::VideoMode(width, height), "SFML works!");
     window.setFramerateLimit(60);
@@ -207,9 +221,9 @@ int main()
     objects.add(new Plane  {sf::Vector3f(0, 2, 0), sf::Vector3f(0, 1, 0), {1}, sf::Color::Yellow} );
     // objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
 
-    lights.add(new Light {Light::Type::AMBIENT, 0.2f});
-    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 3, 0)});
-    //lights.add(new Light {Light::Type::DIRECTIONAL, 0.2f, sf::Vector3f(1, -4, 4)});
+    // lights.add(new Light {Light::Type::AMBIENT, 0.2f});
+    //lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 3, 0)});
+    lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, 4)});
 
 
     sf::Uint8* frame = renderer(objects, lights);

@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/System/Vector3.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
+#include "noncopyable.hpp"
 #include "color.hpp"
 #include <vector>
 
@@ -15,7 +16,7 @@ struct Material
     int specular = 1;
 };
 
-struct  Drawable
+struct  Drawable : public NonCopyable
 {
     sf::Vector3f m_position = {};
     Material m_properties = {};
