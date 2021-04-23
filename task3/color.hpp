@@ -26,7 +26,12 @@ struct Color
     Color(const Color& obj) { r = obj.r; g = obj.g; b = obj.b; }
     
     Color& operator=(const Color& obj) { r = obj.r; g = obj.g; b = obj.b; return *this; }
-    
+    Color operator+(const Color& obj)  { return Color(  r + obj.r > 1 ? 1 : r + obj.r, 
+                                                        g + obj.g > 1 ? 1 : g + obj.g,
+                                                        b + obj.b > 1 ? 1 : b + obj.b); }
+
+
+
     ~Color() = default;
     
     operator sf::Vector3f() const { return sf::Vector3f( r, g, b); } 

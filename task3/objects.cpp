@@ -61,11 +61,17 @@ sf::Vector3f Plane::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f
     float b = dot(direction, m_plane_normal);
     //fprintf(stderr, " t = %f / %f\n", a , b);
     float t = - a / b;
-    if( t > _INFINITY * _INFINITY)
+
+
+
+    if( t >= _INFINITY)
     {
         fprintf(stderr, "Plane intersection< but t > _INFINITY * _INFINITY, t = %f\n", t);
         return sf::Vector3f(0, _INFINITY, _INFINITY);
     }
+
+
+
     //fprintf(stderr, "Plane intersection< but t (%f)< _INFINITY\n", t);
     return sf::Vector3f(1, t, t);
 }

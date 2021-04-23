@@ -12,7 +12,7 @@ class Camera : public NonCopyable
     sf::Vector2i m_canvas_size = {};
     
 public:
-
+    sf::Vector3f getPosition() { return m_position; }
     void setCanvasSize(unsigned int width, unsigned int height);
     explicit Camera(const sf::Vector3f& position, const sf::Vector3f& direction);
     sf::Vector3f CanvasToViewPort(unsigned int x, unsigned int y) const;

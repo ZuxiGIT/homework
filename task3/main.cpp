@@ -2,10 +2,14 @@
 #include <SFML/Graphics.hpp>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include "ray.hpp"
+#include "raytrace.hpp"
+#include "canvas.hpp"
 #include "camera.hpp"
 #include "objects.hpp"
 #include "functions.inl"
 
+#if 0
 #define _GET_RETURN_INTERSECT(_min_dist, _obj_pointer, _function_call)  \
                                                                         \
 sf::Vector2f _returned_vector = _function_call;                         \
@@ -14,13 +18,17 @@ union { float fl; const Drawable* ptr; } _temp;                         \
 _temp.fl = _returned_vector.y;                                          \
 _obj_pointer = _temp.ptr;
 
-#define width   768
-#define height  768
+
+#define width   1080
+#define height  1080
 #define Vw      1
 #define Vh      1
 #define C2Vd    1
 
-
+inline sf::Vector3f reflectRay( const sf::Vector3f& L, const sf::Vector3f& normal)
+{
+    return 2.f * normal * dot(normal, L) - L;
+}
 inline sf::Vector2f closestIntersection(const sf::Vector3f& origin, const sf::Vector3f& direction, float t_min, float t_max, const ObjectManager& objects)
 {
     float min_dist = _INFINITY;
@@ -83,13 +91,14 @@ inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& norm
             const Drawable* shadow_obj = nullptr;
             float shadow_obj_dist = {};
             
-             _GET_RETURN_INTERSECT(shadow_obj_dist, shadow_obj, closestIntersection(point, L, 0.001f, t_max, objects));
+            _GET_RETURN_INTERSECT(shadow_obj_dist, shadow_obj, closestIntersection(point, L, 0.001f, t_max, objects));
 
             if(shadow_obj != nullptr)
                 continue;
 
             //diffuse
             float cos_alpha = dot(L, normal) / (length(L) * length(normal));
+            //fprintf(stderr, "cos-alpha is %f\n", cos_alpha);
             
             if(cos_alpha > 0)
                 intensity += lights[i].m_intensity * cos_alpha;  
@@ -97,7 +106,7 @@ inline float ComputeLighting(const sf::Vector3f& point, const sf::Vector3f& norm
             //specular
             if( prop.specular != -1)
             {
-                sf::Vector3f R = 2.f * normal * dot(normal, L) - L;
+                sf::Vector3f R = reflectRay(L, normal);
                 
                 float cos_beta = dot(normalize(R), normalize(direction));
                 
@@ -122,12 +131,12 @@ inline sf::Vector3f CanvasToViewPort(unsigned int x, unsigned int y)
     return sf::Vector3f (((float)x /** (float)(Vw)*/ / width - 0.5f), (-(float)y /** (float)(Vh)*/ / height + 0.5f), C2Vd);
 }
 
-inline Color ray_cast(const sf::Vector3f& origin, const sf::Vector3f& direction, const ObjectManager& objects, const LightManager& lights)
+inline Color ray_cast(const sf::Vector3f& origin, const sf::Vector3f& direction, float t_min, float t_max, const ObjectManager& objects, const LightManager& lights, int depth)
 {
     float min_dist = {};
     const Drawable* closest_obj = nullptr;
 
-    _GET_RETURN_INTERSECT(min_dist, closest_obj, closestIntersection(origin, direction, 1, _INFINITY, objects));
+    _GET_RETURN_INTERSECT(min_dist, closest_obj, closestIntersection(origin, direction, t_min, t_max, objects));
 
     if(closest_obj == nullptr)
         return sf::Vector3f(0.2f, 0.7f, 0.8f);
@@ -136,8 +145,30 @@ inline Color ray_cast(const sf::Vector3f& origin, const sf::Vector3f& direction,
     sf::Vector3f normal = closest_obj->getNormal(point); // normal at point intersection
 
     normal = normalize(normal);
+    //local color 
     
-    return closest_obj->getColor() * ComputeLighting(point, normal, -direction, closest_obj->m_properties, objects, lights) * 0.454545f;
+    float intens = ComputeLighting(point, normal, -direction, closest_obj->m_properties, objects, lights) ;
+    Ray __temp(point, -direction);
+    float intens2 = Raytrace::ComputeLighting(__temp, normal, closest_obj->m_properties, objects, lights);
+
+    if(intens != intens2)
+    {
+        fprintf(stderr, "ComputeLightning: Not equal (%.8f) != (%.8f)\n", intens,intens2);
+        exit(1);
+    }
+    Color local_color =  closest_obj->getColor() * intens;
+    
+    //reflection
+    float r = closest_obj->m_properties.reflective;
+    
+    if( depth <= 0 || r <= 0)
+        return local_color;
+
+    sf::Vector3f R = reflectRay(-direction, normal);
+    Color reflected_color = ray_cast(point, R, 0.001f, _INFINITY, objects, lights, depth - 1);
+
+    return local_color*(1-r) + reflected_color * r;
+    
 }
 
 
@@ -166,9 +197,19 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
 
             sf::Vector3f dir  = CanvasToViewPort(column, line);
             //fprintf(stderr, "direction is %lf %lf %lf\n", dir.x, dir.y, dir.z);
-            sf::Vector3f res = ray_cast(sf::Vector3f(0,0,0), dir, objects, lights);
+            sf::Vector3f a = ray_cast(sf::Vector3f(0,0,0), dir, 1, _INFINITY, objects, lights, 10);
+            Ray ray (sf::Vector3f(0,0,0), dir);
+            sf::Vector3f b = Raytrace::ray_cast(ray, 1, _INFINITY, objects, lights);
+
+
+            if( a != b)
+            {
+                fprintf(stderr, "ray_cast: Not equal (%.8f, %.8f, %.8f) != (%.8f, %.8f, %.8f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
+                exit(1);
+            }
+
             
-            setPixel(framebuffer, column, line, res);
+            setPixel(framebuffer, column, line, a);
         }
     
     for (size_t line = 0; line < height; line++)
@@ -180,17 +221,18 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
 
 
 
-
+#endif
 
 int main()
 {
 
 
 
+    Canvas canvas {1080, 1080};
     Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f,1.f));
-    camera.setCanvasSize(width, height);
-
-#if 1
+    canvas.setCamera(camera);
+    
+#if 0
     sf::Vector3f a = camera.CanvasToViewPort(738, 738); 
     sf::Vector3f b = CanvasToViewPort(738, 738);
     
@@ -202,37 +244,43 @@ int main()
 #endif
 
     fprintf(stderr, "sizeof(float) = %u bytes\nsizeof(double) = %u bytes\n", sizeof(float), sizeof(double));
-    sf::RenderWindow window(sf::VideoMode(width, height), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!");
     window.setFramerateLimit(60);
 
-    sf::Texture texture;
-    sf::Sprite sprite;
-    
-    texture.create(width, height);
 
     ObjectManager& objects = ObjectManager::createManager();
     LightManager lights = {};
 
     
     //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
-    objects.add(new Sphere {sf::Vector3f(0, -1, 3), 1, {500}, sf::Color::Red} );
-    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500}, sf::Color::Blue} );
-    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10}, sf::Color::Green} );
-    objects.add(new Plane  {sf::Vector3f(0, 2, 0), sf::Vector3f(0, 1, 0), {1}, sf::Color::Yellow} );
+    objects.add(new Sphere {sf::Vector3f(0, 0, 4), 1, {500, 0.2f}, sf::Color::Red} );
+    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500, 0.9f}, sf::Color::Blue} );
+    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10, 0.9f}, sf::Color::Green} );
+    objects.add(new Plane  {sf::Vector3f(0, -2, 0), sf::Vector3f(0, 1, 0), {1, 0}, sf::Color::Yellow} );
     // objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
 
-    // lights.add(new Light {Light::Type::AMBIENT, 0.2f});
-    //lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 3, 0)});
-    lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, 4)});
+    lights.add(new Light {Light::Type::AMBIENT, 0.2f});
+    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 10, 0)});
+    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(-2, 0, 0)});
+    lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, -4)});
 
 
+    canvas.setObjects(objects);
+    canvas.setLights(lights);
+
+
+
+    #if 0
+    sf::Texture texture;
+    sf::Sprite sprite;
+    
+    texture.create(width, height);
     sf::Uint8* frame = renderer(objects, lights);
     texture.update(frame);
     sprite.setTexture(texture, true);
 
 
 
-    #if 0
     fprintf(stderr, "openning file\n");
     FILE* fp = fopen("test.ppm", "wb");
 
@@ -274,12 +322,8 @@ int main()
                 window.close();
         }
 
-        
-    
-        
-        
         window.clear();
-        window.draw(sprite);
+        canvas.draw(window);
         window.display();
     }
 

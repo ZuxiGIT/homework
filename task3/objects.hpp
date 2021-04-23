@@ -14,6 +14,7 @@ const float _EPS = static_cast<float>(1e-3);
 struct Material
 {
     int specular = 1;
+    float reflective = 0;
 };
 
 struct  Drawable : public NonCopyable
