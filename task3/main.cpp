@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "ray.hpp"
@@ -8,6 +9,9 @@
 #include "camera.hpp"
 #include "objects.hpp"
 #include "functions.inl"
+#include <GLM/glm.hpp>
+
+
 
 #if 0
 #define _GET_RETURN_INTERSECT(_min_dist, _obj_pointer, _function_call)  \
@@ -151,11 +155,14 @@ inline Color ray_cast(const sf::Vector3f& origin, const sf::Vector3f& direction,
     Ray __temp(point, -direction);
     float intens2 = Raytrace::ComputeLighting(__temp, normal, closest_obj->m_properties, objects, lights);
 
+#if 0
     if(intens != intens2)
     {
         fprintf(stderr, "ComputeLightning: Not equal (%.8f) != (%.8f)\n", intens,intens2);
         exit(1);
     }
+#endif
+
     Color local_color =  closest_obj->getColor() * intens;
     
     //reflection
@@ -199,15 +206,15 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
             //fprintf(stderr, "direction is %lf %lf %lf\n", dir.x, dir.y, dir.z);
             sf::Vector3f a = ray_cast(sf::Vector3f(0,0,0), dir, 1, _INFINITY, objects, lights, 10);
             Ray ray (sf::Vector3f(0,0,0), dir);
-            sf::Vector3f b = Raytrace::ray_cast(ray, 1, _INFINITY, objects, lights);
+            //sf::Vector3f b = Raytrace::ray_cast(ray, 1, _INFINITY, objects, lights);
 
-
+#if 0
             if( a != b)
             {
                 fprintf(stderr, "ray_cast: Not equal (%.8f, %.8f, %.8f) != (%.8f, %.8f, %.8f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
                 exit(1);
             }
-
+#endif
             
             setPixel(framebuffer, column, line, a);
         }
@@ -219,14 +226,16 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
     return framebuffer;
 }
 
-
-
 #endif
+
+
 
 int main()
 {
-
-
+    sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!");
+    window.setFramerateLimit(60);
+    window.setMouseCursorVisible(false);
+    bool mouse_hidden = true;
 
     Canvas canvas {1080, 1080};
     Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f,1.f));
@@ -244,9 +253,13 @@ int main()
 #endif
 
     fprintf(stderr, "sizeof(float) = %u bytes\nsizeof(double) = %u bytes\n", sizeof(float), sizeof(double));
-    sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!");
-    window.setFramerateLimit(60);
 
+    sf::ContextSettings settings = window.getSettings();
+
+    std::cout << "depth bits:" << settings.depthBits << std::endl;
+    std::cout << "stencil bits:" << settings.stencilBits << std::endl;
+    std::cout << "antialiasing level:" << settings.antialiasingLevel << std::endl;
+    std::cout << "version:" << settings.majorVersion << "." << settings.minorVersion << std::endl;
 
     ObjectManager& objects = ObjectManager::createManager();
     LightManager lights = {};
@@ -254,8 +267,8 @@ int main()
     
     //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
     objects.add(new Sphere {sf::Vector3f(0, 0, 4), 1, {500, 0.2f}, sf::Color::Red} );
-    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500, 0.9f}, sf::Color::Blue} );
-    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10, 0.9f}, sf::Color::Green} );
+    objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500, 0.6f}, sf::Color::Blue} );
+    objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10, 0.1f}, sf::Color::Green} );
     objects.add(new Plane  {sf::Vector3f(0, -2, 0), sf::Vector3f(0, 1, 0), {1, 0}, sf::Color::Yellow} );
     // objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
 
@@ -270,14 +283,12 @@ int main()
 
 
 
+
     #if 0
     sf::Texture texture;
     sf::Sprite sprite;
     
-    texture.create(width, height);
-    sf::Uint8* frame = renderer(objects, lights);
-    texture.update(frame);
-    sprite.setTexture(texture, true);
+    texture.create(1080, 1080);
 
 
 
@@ -318,12 +329,41 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
+            if (event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape) \
+            && !mouse_hidden))
                 window.close();
+            else if (event.type == sf::Event::MouseMoved)
+            {
+                if(mouse_hidden)
+                {
+                    float mx = event.mouseMove.x / 1080.f - 0.5f;
+                    float my = event.mouseMove.y / 1080.f - 0.5f;
+                    fprintf(stderr, "mouse moved (%f, %f)\n", mx, my);
+                    camera.rotate(mx, my);
+                    sf::Mouse::setPosition(sf::Vector2i(540, 540), window);
+                }
+            }
+            else if (event.type == sf::Event::MouseButtonPressed)
+            {
+                window.setMouseCursorVisible(false);
+                mouse_hidden = true;
+            }
+            else if (event.type == sf::Event::KeyPressed)
+                if(event.key.code == sf::Keyboard::Escape && mouse_hidden)
+                {
+                    window.setMouseCursorVisible(true);
+                    mouse_hidden = false;
+                }
+
         }
 
+        // sf::Uint8* frame = renderer(objects, lights);
+        // texture.update(frame);
+        // sprite.setTexture(texture, true);
+        
         window.clear();
         canvas.draw(window);
+        //window.draw(sprite);
         window.display();
     }
 

@@ -15,12 +15,12 @@ m_radius(radius)
 
 sf::Vector3f Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const
 {
-    sf::Vector3f OC = origin - m_position;
+    sf::Vector3f CO = origin - m_position;
 
     
     float k1 = dot(direction, direction);
-    float k2 = 2 * dot(direction, OC);
-    float k3 = dot(OC, OC) - m_radius * m_radius;
+    float k2 = 2 * dot(direction, CO);
+    float k3 = dot(CO, CO) - m_radius * m_radius;
     
     float discr = k2 * k2 - 4 * k1 * k3;
     
@@ -63,14 +63,14 @@ sf::Vector3f Plane::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f
     float t = - a / b;
 
 
-
+#if 0
     if( t >= _INFINITY)
     {
         fprintf(stderr, "Plane intersection< but t > _INFINITY * _INFINITY, t = %f\n", t);
         return sf::Vector3f(0, _INFINITY, _INFINITY);
     }
 
-
+#endif
 
     //fprintf(stderr, "Plane intersection< but t (%f)< _INFINITY\n", t);
     return sf::Vector3f(1, t, t);

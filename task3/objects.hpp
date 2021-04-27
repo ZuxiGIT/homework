@@ -43,6 +43,7 @@ class Sphere : public Drawable
 {
     float m_radius = 0;
 
+
 public:
 
     explicit Sphere(sf::Vector3f position, float radius, Material properties, sf::Color color = sf::Color::Green);
