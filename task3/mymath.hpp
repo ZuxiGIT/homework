@@ -99,3 +99,8 @@ inline Vector3<T> operator/(const Vector3<T>& lhs, T num)
     Vector3<T> temp = lhs;
     return temp /= num;
 }
+
+template<typename T>
+struct mat2x2
+{
+};

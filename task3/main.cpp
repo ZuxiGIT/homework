@@ -334,7 +334,7 @@ int main()
                 window.close();
             else if (event.type == sf::Event::MouseMoved)
             {
-                if(mouse_hidden)
+                if(!mouse_hidden)
                 {
                     float mx = event.mouseMove.x / 1080.f - 0.5f;
                     float my = event.mouseMove.y / 1080.f - 0.5f;
