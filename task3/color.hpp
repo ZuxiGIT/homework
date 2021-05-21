@@ -34,7 +34,17 @@ struct Color
 
     ~Color() = default;
     
-    operator sf::Vector3f() const { return sf::Vector3f( r, g, b); } 
+    operator sf::Vector3f() const { return sf::Vector3f( r, g, b); }
+    //operator const sf::Vector3f() const { return sf::Vector3f( r, g, b); }
+
+    operator sf::Color() const { return sf::Color(  static_cast<unsigned char>(r * 255),
+                                                    static_cast<unsigned char>(g * 255),
+                                                    static_cast<unsigned char>(b * 255)); }
+
+    // operator const sf::Color() const { return sf::Color(static_cast<unsigned char>(r * 255),
+    //                                                     static_cast<unsigned char>(g * 255),
+    //                                                     static_cast<unsigned char>(b * 255)); }
+
 };
 
 template<typename T>

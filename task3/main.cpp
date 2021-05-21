@@ -9,8 +9,9 @@
 #include "camera.hpp"
 #include "objects.hpp"
 #include "functions.inl"
-#include <GLM/glm.hpp>
-
+//#include <GLM/glm.hpp>
+#include <GLEW/glew.h>
+#include <SFML/OpenGL.hpp>
 
 
 #if 0
@@ -232,12 +233,22 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
 
 int main()
 {
+    int nrAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    fprintf(stderr,"Maximum nr of vertex attributes supported: %d\n", nrAttributes);
+
+    
     sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!");
+    GLenum err = glewInit();
+    if (GLEW_OK != err)
+    {
+        fprintf(stderr, "LOX\n");
+    }
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(false);
     bool mouse_hidden = true;
 
-    Canvas canvas {1080, 1080};
+    Canvas canvas {800, 800};
     Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f,1.f));
     canvas.setCamera(camera);
     
