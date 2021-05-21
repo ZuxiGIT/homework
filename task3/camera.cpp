@@ -20,7 +20,7 @@ void Camera::setCanvasSize(unsigned int width, unsigned int height)
 void Camera::rotate(float x, float y)
 {
     Vector2f zx = rot(x);
-    fprintf(stderr, "rot(x) (%f, %f)\n", zx.x, zx.y);
+    // fprintf(stderr, "rot(x) (%f, %f)\n", zx.x, zx.y);
     m_direction.z = m_direction.z * zx.x - m_direction.x * zx.y;
     m_direction.x = m_direction.z * zx.y + m_direction.x * zx.x;
 
@@ -29,7 +29,7 @@ void Camera::rotate(float x, float y)
 
 
     Vector2f xy = rot(y);
-    fprintf(stderr, "rot(y) (%f, %f)\n", xy.x, xy.y);
+    //fprintf(stderr, "rot(y) (%f, %f)\n", xy.x, xy.y);
     m_direction.y = m_direction.y * xy.x - m_direction.z * xy.y;
     m_direction.z = m_direction.y * xy.y + m_direction.z * xy.x;
 

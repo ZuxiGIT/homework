@@ -6,7 +6,7 @@
 
 namespace sf{
 
-    class EllipseShape : public Shape
+    class EllipseShape final : public Shape
     {
         Vector2f m_radius = {};
         size_t m_quality = {};
@@ -41,8 +41,8 @@ namespace sf{
         {
             double angle = index * 2 * M_PI / getPointCount() - M_PI / 2;
 
-            float x = static_cast<float>(cos(angle) * static_cast<double>(m_radius.x));
-            float y = static_cast<float>(sin(angle) * static_cast<double>(m_radius.y));
+            float x = static_cast<float>(cos(angle) * static_cast<float>(m_radius.x));
+            float y = static_cast<float>(sin(angle) * static_cast<float>(m_radius.y));
 
             return Vector2f(m_radius.x + x, m_radius.y + y);
         }

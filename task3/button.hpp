@@ -13,7 +13,7 @@ protected:
     Vector2f m_position = {};
     Vector2f m_size    = {};
 public:
-    AbstractButton(sf::RenderTarget* target, Vector2i pos, Vector2i sz) : m_target(target), m_position(pos), m_size(sz) {}
+    AbstractButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz) : m_target(target), m_position(pos), m_size(sz) {}
     virtual ~AbstractButton() {}
 
     AbstractButton(const AbstractButton&) = delete;
@@ -30,7 +30,7 @@ class ActionButton : public AbstractButton
 protected:
     virtual void action() = 0;
 public:
-    ActionButton(sf::RenderTarget* target, Vector2i pos, Vector2i sz) : AbstractButton(target, pos, sz) {}
+    ActionButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz) : AbstractButton(target, pos, sz) {}
     virtual ~ActionButton() override {}
 };
 
@@ -41,12 +41,12 @@ class MenuButton : public ActionButton
 protected:
     sf::Text m_text = {};
 public:
-    MenuButton(sf::RenderTarget* target, Vector2i pos, Vector2i sz, const char* text)
+    MenuButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz, const char* text)
     : 
     ActionButton(target, pos, sz)
     {	
         m_text = sf::Text(text, font);
-	    m_text.setCharacterSize(20);
+	    m_text.setCharacterSize(35);
 	    m_text.setFillColor(Color(1.f, 1.f, 1.f));
     }
     
@@ -63,9 +63,11 @@ class MenuEllipseButton : public MenuButton
     int m_quality = 70;
 public:
     
-    MenuEllipseButton(sf::RenderTarget* target, Vector2i pos, Vector2i sz, const char* text, Vector2f radiuses)
+    MenuEllipseButton(sf::RenderTarget* target, Vector2f pos,  Vector2f radiuses, const char* text)
     :
-    MenuButton(target, pos, sz, text), m_radius_a(radiuses.x), m_radius_b(radiuses.y) 
+    MenuButton(target, pos, 2.f * radiuses, text),
+    m_radius_a(radiuses.x),
+    m_radius_b(radiuses.y) 
     {
         scaleText();
     }
@@ -78,6 +80,29 @@ public:
     virtual void scaleText() override;
 };
 
+class MenuCircleButton : public MenuEllipseButton
+{
+public:
+    MenuCircleButton(sf::RenderTarget* target, Vector2f pos,  float radius, const char* text)
+    : MenuEllipseButton(target, pos, Vector2f(radius, radius), text) {}
+
+    virtual ~MenuCircleButton() override {}
+};
+
+class MenuRectangleButton final : public MenuButton
+{
+    public:
+    
+    MenuRectangleButton(sf::RenderTarget* target, Vector2f pos,  Vector2f sz, const char* text)
+    : MenuButton(target, pos, sz, text) {}
+
+    virtual ~MenuRectangleButton() override {}
+
+    virtual void action() override {}
+    virtual void draw() override;
+    virtual void clicked(const Vector2f& mouse_pos) override;
+    virtual void scaleText() override;
+};
 
 class ButtonManager
 {

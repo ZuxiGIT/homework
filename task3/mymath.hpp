@@ -1,4 +1,6 @@
 #pragma once
+#include <SFML/System/Vector2.hpp>
+#include <SFML/System/Vector3.hpp>
 
 template <typename T>
 struct Vector2
@@ -9,6 +11,14 @@ struct Vector2
     Vector2(T X, T Y) : x(X), y(Y) {}
     template<typename U>
     explicit Vector2(const Vector2<U>& that) : x(static_cast<T>(that.x)), y(static_cast<T>(that.y)) {}
+    
+    Vector2(const sf::Vector2f&);
+    Vector2(const sf::Vector2i&);
+    Vector2(const sf::Vector2u&);
+    
+    operator sf::Vector2f ();
+    operator sf::Vector2i ();
+    operator sf::Vector2u ();
 
     Vector2<T> operator-() { return Vector2<T> (-x, -y); }
     Vector2<T>& operator+=(const Vector2<T>& that) { x += that.x; y += that.y; return *this; }
@@ -42,6 +52,13 @@ inline Vector2<T> operator*(const Vector2<T>& lhs, T num)
 }
 
 template <typename T>
+inline Vector2<T> operator*(T num, const Vector2<T>& lhs)
+{
+    Vector2<T> temp = lhs;
+    return temp *= num;
+}
+
+template <typename T>
 inline Vector2<T> operator/(const Vector2<T>& lhs, T num)
 {
     Vector2<T> temp = lhs;
@@ -50,8 +67,46 @@ inline Vector2<T> operator/(const Vector2<T>& lhs, T num)
 
 using Vector2f = Vector2<float>;
 using Vector2i = Vector2<int>;
-using Vector2c = Vector2<char>;
+using Vector2u = Vector2<unsigned>;
 
+template <>
+inline Vector2f::Vector2(const sf::Vector2f& that)
+:
+x(that.x),
+y(that.y)
+{}
+
+template <>
+inline Vector2i::Vector2(const sf::Vector2i& that)
+:
+x(that.x),
+y(that.y)
+{}
+
+template <>
+inline Vector2u::Vector2(const sf::Vector2u& that)
+:
+x(that.x),
+y(that.y)
+{}
+
+template<>
+inline Vector2f::operator sf::Vector2f()
+{
+    return sf::Vector2f(x, y);
+}
+
+template<>
+inline Vector2i::operator sf::Vector2i()
+{
+    return sf::Vector2i(x, y);
+}
+
+template<>
+inline Vector2u::operator sf::Vector2u()
+{
+    return sf::Vector2u(x, y);
+}
 template <typename T>
 struct Vector3
 {

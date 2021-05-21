@@ -46,13 +46,15 @@ void Canvas::renderer()
     m_sprite.setTexture(m_texture, true);    
 }
 
-bool Canvas::inCanvas(const Vector2f& mouse_pos)
+bool Canvas::isInCanvas(const Vector2f& mouse_pos)
 {
     float local_x = mouse_pos.x - m_position.x;
     float local_y = mouse_pos.y - m_position.y;
+    
     if( local_x < static_cast<float>(m_height) && local_x > 0 && 
         local_y < static_cast<float>(m_width)  && local_y > 0)
         return true;
+    
     return false;
 }
 
