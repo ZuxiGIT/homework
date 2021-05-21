@@ -3,13 +3,15 @@
 #include "ray.hpp"
 #include "raytrace.hpp"
 
-Canvas::Canvas(unsigned int width, unsigned int height)
+Canvas::Canvas(unsigned int width, unsigned int height, float xLTop, float yLTop)
 :
 m_width(width),
 m_height(height),
-m_framebuffer(new sf::Uint8 [width * height * 4])
+m_framebuffer(new sf::Uint8 [width * height * 4]),
+m_position(xLTop, yLTop)
 {
     m_texture.create(m_width, m_height);
+    m_sprite.setPosition(m_position.x, m_position.y);
 }
 
 void Canvas::setPixel(unsigned int x, unsigned int y, Color pixel)
@@ -41,7 +43,17 @@ void Canvas::renderer()
         setPixel(column, m_height / 2, sf::Vector3f(0, 0,0));
     
     m_texture.update(m_framebuffer);
-    m_sprite.setTexture(m_texture, true);
+    m_sprite.setTexture(m_texture, true);    
+}
+
+bool Canvas::inCanvas(const Vector2f& mouse_pos)
+{
+    float local_x = mouse_pos.x - m_position.x;
+    float local_y = mouse_pos.y - m_position.y;
+    if( local_x < static_cast<float>(m_height) && local_x > 0 && 
+        local_y < static_cast<float>(m_width)  && local_y > 0)
+        return true;
+    return false;
 }
 
 void Canvas::draw(sf::RenderTarget& target)

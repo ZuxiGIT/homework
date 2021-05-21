@@ -8,6 +8,7 @@
 #include "canvas.hpp"
 #include "camera.hpp"
 #include "objects.hpp"
+#include "button.hpp"
 #include "functions.inl"
 //#include <GLM/glm.hpp>
 #include <GLEW/glew.h>
@@ -233,22 +234,22 @@ inline sf::Uint8* renderer(const ObjectManager& objects, const LightManager& lig
 
 int main()
 {
-    int nrAttributes;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-    fprintf(stderr,"Maximum nr of vertex attributes supported: %d\n", nrAttributes);
 
+    // int nrAttributes = -1;
+    // glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
+    // fprintf(stderr,"Maximum nr of vertex attributes supported: %d\n", nrAttributes);
     
     sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!");
-    GLenum err = glewInit();
-    if (GLEW_OK != err)
-    {
-        fprintf(stderr, "LOX\n");
-    }
+    // GLenum err = glewInit();
+    // if (GLEW_OK != err)
+    // {
+    //     fprintf(stderr, "LOX\n");
+    // }
     window.setFramerateLimit(60);
-    window.setMouseCursorVisible(false);
-    bool mouse_hidden = true;
+    window.setMouseCursorVisible(true);
+    bool mouse_hidden = false;
 
-    Canvas canvas {800, 800};
+    Canvas canvas {800, 800, 10, 10};
     Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f,1.f));
     canvas.setCamera(camera);
     
@@ -261,9 +262,9 @@ int main()
         fprintf(stderr, "Not equal (%f, %f, %f) != (%f, %f, %f)\n", a.x, a.y, a.z, b.x, b.y, b.z);
         exit(1);
     }
+    fprintf(stderr, "sizeof(float) = %u bytes\nsizeof(double) = %u bytes\n", sizeof(float), sizeof(double));
 #endif
 
-    fprintf(stderr, "sizeof(float) = %u bytes\nsizeof(double) = %u bytes\n", sizeof(float), sizeof(double));
 
     sf::ContextSettings settings = window.getSettings();
 
@@ -275,6 +276,10 @@ int main()
     ObjectManager& objects = ObjectManager::createManager();
     LightManager lights = {};
 
+    MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
+    ButtonManager& buttons = ButtonManager::createManager();
+
+    buttons.add(new MenuEllipseButton {&window, Vector2i{900, 900}, Vector2i{100, 100}, "test", Vector2f{50, 50}} );
     
     //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
     objects.add(new Sphere {sf::Vector3f(0, 0, 4), 1, {500, 0.2f}, sf::Color::Red} );
@@ -291,9 +296,6 @@ int main()
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
-
-
-
 
     #if 0
     sf::Texture texture;
@@ -327,6 +329,9 @@ int main()
     fclose(fp);
     #endif
 
+    
+    
+    
     sf::Clock Clock;
 
     while (window.isOpen())
@@ -345,10 +350,10 @@ int main()
                 window.close();
             else if (event.type == sf::Event::MouseMoved)
             {
-                if(!mouse_hidden)
+                if(mouse_hidden)
                 {
-                    float mx = event.mouseMove.x / 1080.f - 0.5f;
-                    float my = event.mouseMove.y / 1080.f - 0.5f;
+                    float mx = static_cast<float>(event.mouseMove.x) / 1080.f - 0.5f;
+                    float my = static_cast<float>(event.mouseMove.y) / 1080.f - 0.5f;
                     fprintf(stderr, "mouse moved (%f, %f)\n", mx, my);
                     camera.rotate(mx, my);
                     sf::Mouse::setPosition(sf::Vector2i(540, 540), window);
@@ -356,8 +361,15 @@ int main()
             }
             else if (event.type == sf::Event::MouseButtonPressed)
             {
-                window.setMouseCursorVisible(false);
-                mouse_hidden = true;
+                sf::Vector2i mouse = sf::Mouse::getPosition();
+                fprintf(stderr,"-----mouse position(%d, %d)\n", mouse.x, mouse.y);
+                if(canvas.inCanvas(Vector2f(mouse.x, mouse.y)))
+                {
+                    window.setMouseCursorVisible(false);
+                    mouse_hidden = true;
+                }
+                buttons.clicked(Vector2f(mouse.x, mouse.y));
+
             }
             else if (event.type == sf::Event::KeyPressed)
                 if(event.key.code == sf::Keyboard::Escape && mouse_hidden)
@@ -368,13 +380,10 @@ int main()
 
         }
 
-        // sf::Uint8* frame = renderer(objects, lights);
-        // texture.update(frame);
-        // sprite.setTexture(texture, true);
         
-        window.clear();
+        window.clear(Color(0.2f, 0.3f, 0.3f));
         canvas.draw(window);
-        //window.draw(sprite);
+        buttons.draw();
         window.display();
     }
 

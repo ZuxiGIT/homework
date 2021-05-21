@@ -40,8 +40,8 @@ void Camera::rotate(float x, float y)
 
 Vector2f Camera::rot(float a)
 {
-    float s = sin(a);
-    float c = cos(a);
+    float s = static_cast<float>(sin(a));
+    float c = static_cast<float>(cos(a));
     return Vector2f(c, s);
 }
 
