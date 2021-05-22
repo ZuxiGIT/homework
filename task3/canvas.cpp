@@ -39,6 +39,7 @@ void Canvas::renderer()
     
     for (size_t line = 0; line < m_height; line++)
         setPixel(m_width / 2, line, sf::Vector3f(0, 0,0));
+    
     for (size_t column = 0; column < m_width; column++)
         setPixel(column, m_height / 2, sf::Vector3f(0, 0,0));
     

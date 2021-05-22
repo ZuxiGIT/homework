@@ -10,6 +10,7 @@
 #include "objects.hpp"
 #include "button.hpp"
 #include "functions.inl"
+#include "functors.hpp"
 //#include <GLM/glm.hpp>
 #include <GLEW/glew.h>
 #include <SFML/OpenGL.hpp>
@@ -17,10 +18,10 @@
 
 // TODO 
 // improve text scaling
+// ----- add functors ---- done
 
 int main()
 {
-    
     
     sf::ContextSettings settings;
 
@@ -47,12 +48,6 @@ int main()
     ObjectManager& objects = ObjectManager::createManager();
     LightManager lights = {};
 
-    MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
-    ButtonManager& buttons = ButtonManager::createManager();
-
-
-    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20}, Vector2f{200, 20}, "test"} );
-    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2"});
     
     //objects.add(new Sphere {sf::Vector3f(0, 0, 15), 5, sf::Color::Red} );
     objects.add(new Sphere {sf::Vector3f(0, 0, 4), 1, {500, 0.2f}, sf::Color::Red} );
@@ -66,6 +61,14 @@ int main()
     lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(-2, 0, 0)});
     lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, -4)});
 
+    TestFunctor test {&window, &objects, &lights};
+    
+    MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
+    ButtonManager& buttons = ButtonManager::createManager();
+
+
+    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20}, Vector2f{200, 20}, "test", &test} );
+    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2", &test});
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
@@ -80,6 +83,7 @@ int main()
         fprintf(stderr, "Framrate: %lf\r", Framerate);
 
         sf::Event event;
+
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape) \

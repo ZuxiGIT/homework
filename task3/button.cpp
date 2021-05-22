@@ -70,7 +70,7 @@ void MenuEllipseButton::scaleText()
 	Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset??? 
 	Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
 
-    fprintf(stderr, "ellipse: scale parametres (%lf, %lf)\noffset parametres (%lf, %lf)\n", Xscale, Yscale, Xoffset, Yoffset);
+    fprintf(stderr, "ellipse: scale parametres (%lf, %lf)\nellipse: offset parametres (%lf, %lf)\n", Xscale, Yscale, Xoffset, Yoffset);
     m_text.setPosition(static_cast<float>(m_position.x + Xoffset), static_cast<float>(m_position.y + Yoffset));
 	m_text.setScale(static_cast<float>(Xscale), static_cast<float>(Yscale));
 
@@ -124,7 +124,7 @@ void MenuRectangleButton::scaleText()
 	Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset???
 	Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
 
-    fprintf(stderr, "rectangle: offset parametres (%lf, %lf)\n", Xoffset, Yoffset);
+    fprintf(stderr, "--------rectangle: offset parametres (%lf, %lf)\n", Xoffset, Yoffset);
 	fflush(NULL);
     
     m_text.setPosition(static_cast<float>(m_position.x + Xoffset), static_cast<float>(m_position.y + Yoffset));

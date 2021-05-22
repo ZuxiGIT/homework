@@ -5,6 +5,7 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include "noncopyable.hpp"
+#include "functors.hpp"
 
 class AbstractButton
 {
@@ -28,9 +29,11 @@ public:
 class ActionButton : public AbstractButton
 {
 protected:
-    virtual void action() = 0;
+    AbstractFunctor& m_action;
 public:
-    ActionButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz) : AbstractButton(target, pos, sz) {}
+    void action() { m_action(); }
+    ActionButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz, AbstractFunctor* action) : AbstractButton(target, pos, sz), m_action(*action) {}
+    void setAction();
     virtual ~ActionButton() override {}
 };
 
@@ -41,9 +44,9 @@ class MenuButton : public ActionButton
 protected:
     sf::Text m_text = {};
 public:
-    MenuButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz, const char* text)
+    MenuButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz, const char* text, AbstractFunctor* action)
     : 
-    ActionButton(target, pos, sz)
+    ActionButton(target, pos, sz, action)
     {	
         m_text = sf::Text(text, font);
 	    m_text.setCharacterSize(35);
@@ -63,9 +66,9 @@ class MenuEllipseButton : public MenuButton
     int m_quality = 70;
 public:
     
-    MenuEllipseButton(sf::RenderTarget* target, Vector2f pos,  Vector2f radiuses, const char* text)
+    MenuEllipseButton(sf::RenderTarget* target, Vector2f pos,  Vector2f radiuses, const char* text, AbstractFunctor* action)
     :
-    MenuButton(target, pos, 2.f * radiuses, text),
+    MenuButton(target, pos, 2.f * radiuses, text, action),
     m_radius_a(radiuses.x),
     m_radius_b(radiuses.y) 
     {
@@ -74,7 +77,7 @@ public:
     
     virtual ~MenuEllipseButton() override {}
 
-    virtual void action() override { fprintf(stderr, "test action button\n"); }
+    // virtual void action() override { m_action(); }
     virtual void draw() override;
     virtual void clicked(const Vector2f& mouse_pos) override;
     virtual void scaleText() override;
@@ -83,8 +86,8 @@ public:
 class MenuCircleButton : public MenuEllipseButton
 {
 public:
-    MenuCircleButton(sf::RenderTarget* target, Vector2f pos,  float radius, const char* text)
-    : MenuEllipseButton(target, pos, Vector2f(radius, radius), text) {}
+    MenuCircleButton(sf::RenderTarget* target, Vector2f pos,  float radius, const char* text, AbstractFunctor* action)
+    : MenuEllipseButton(target, pos, Vector2f(radius, radius), text, action) {}
 
     virtual ~MenuCircleButton() override {}
 };
@@ -93,12 +96,15 @@ class MenuRectangleButton final : public MenuButton
 {
     public:
     
-    MenuRectangleButton(sf::RenderTarget* target, Vector2f pos,  Vector2f sz, const char* text)
-    : MenuButton(target, pos, sz, text) {}
+    MenuRectangleButton(sf::RenderTarget* target, Vector2f pos,  Vector2f sz, const char* text, AbstractFunctor* action)
+    : MenuButton(target, pos, sz, text, action) 
+    {
+        scaleText();
+    }
 
     virtual ~MenuRectangleButton() override {}
 
-    virtual void action() override {}
+    // virtual void action() override { m_action(); }
     virtual void draw() override;
     virtual void clicked(const Vector2f& mouse_pos) override;
     virtual void scaleText() override;
