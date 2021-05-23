@@ -50,7 +50,7 @@ public:
     {	
         m_text = sf::Text(text, font);
 	    m_text.setCharacterSize(35);
-	    m_text.setFillColor(Color(1.f, 1.f, 1.f));
+	    m_text.setFillColor(RGB(255, 255, 255));
     }
     
     static void loadFont(const char* filepath) { font.loadFromFile(filepath); }

@@ -33,7 +33,7 @@ class Canvas : public NonCopyable
 public:
     explicit Canvas(unsigned int width, unsigned int height, float xLTop = 0, float yLTop = 0);
 
-    void setPixel(unsigned int x, unsigned int y, Color pixel);
+    void setPixel(unsigned int x, unsigned int y, RGB pixel);
     
     void setObjects(ObjectManager& objects) { m_objects = &objects; }
     void setLights(LightManager& lights)    { m_lights = &lights; }

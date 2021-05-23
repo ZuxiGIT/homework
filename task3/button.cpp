@@ -13,7 +13,7 @@ void MenuEllipseButton::draw()
     sf::EllipseShape ellipse (sf::Vector2f(m_radius_a, m_radius_b), m_quality);
     
     ellipse.setPosition(m_position.x, m_position.y);
-    ellipse.setFillColor(Color(0.f, 1.f, 0.f));
+    ellipse.setFillColor(RGB(0, 0, 255));
 
     m_target->draw(ellipse);
     m_target->draw(m_text);
@@ -83,7 +83,7 @@ void MenuRectangleButton::draw()
 {
     sf::RectangleShape Body {m_size};
     Body.setPosition(m_position);
-    Body.setFillColor(Color(1.f, 0.f, 0.f));
+    Body.setFillColor(RGB(255, 0, 0));
     
     m_target->draw(Body);
 

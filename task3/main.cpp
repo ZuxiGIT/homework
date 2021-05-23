@@ -18,11 +18,17 @@
 
 // TODO 
 // improve text scaling
+// add RGB -> HSL
+// add HSL -> RGB
 // ----- add functors ---- done
 
 int main()
 {
-    
+    RGB test1(67, 113, 4);
+    HSL test2 = RGB2HSL(test1);
+    RGB test3 = HSL2RGB(test2);
+
+    fprintf(stderr, "rgb (%u, %u, %u)\nhsl(%u, %u, %u)\nrgb (%u, %u, %u)\n", test1.r, test1.g, test1.b, test2.h, test2.s, test2.l, test3.r, test3.g, test3.b);
     sf::ContextSettings settings;
 
     settings.depthBits = 0;
