@@ -42,15 +42,17 @@ class MenuButton : public ActionButton
     static sf::Font font;
 
 protected:
+    RGB m_color = {};
     sf::Text m_text = {};
 public:
-    MenuButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz, const char* text, AbstractFunctor* action)
+    MenuButton(sf::RenderTarget* target, Vector2f pos, Vector2f sz, const char* text, AbstractFunctor* action, const RGB& color)
     : 
-    ActionButton(target, pos, sz, action)
+    ActionButton(target, pos, sz, action), 
+    m_color(color)
     {	
         m_text = sf::Text(text, font);
 	    m_text.setCharacterSize(35);
-	    m_text.setFillColor(RGB(255, 255, 255));
+	    m_text.setFillColor(RGB(0,0, 100));
     }
     
     static void loadFont(const char* filepath) { font.loadFromFile(filepath); }
@@ -66,9 +68,9 @@ class MenuEllipseButton : public MenuButton
     int m_quality = 70;
 public:
     
-    MenuEllipseButton(sf::RenderTarget* target, Vector2f pos,  Vector2f radiuses, const char* text, AbstractFunctor* action)
+    MenuEllipseButton(sf::RenderTarget* target, Vector2f pos,  Vector2f radiuses, const char* text, AbstractFunctor* action, const RGB& color)
     :
-    MenuButton(target, pos, 2.f * radiuses, text, action),
+    MenuButton(target, pos, 2.f * radiuses, text, action, color),
     m_radius_a(radiuses.x),
     m_radius_b(radiuses.y) 
     {
@@ -86,8 +88,8 @@ public:
 class MenuCircleButton : public MenuEllipseButton
 {
 public:
-    MenuCircleButton(sf::RenderTarget* target, Vector2f pos,  float radius, const char* text, AbstractFunctor* action)
-    : MenuEllipseButton(target, pos, Vector2f(radius, radius), text, action) {}
+    MenuCircleButton(sf::RenderTarget* target, Vector2f pos,  float radius, const char* text, AbstractFunctor* action, const RGB& color)
+    : MenuEllipseButton(target, pos, Vector2f(radius, radius), text, action, color) {}
 
     virtual ~MenuCircleButton() override {}
 };
@@ -96,8 +98,8 @@ class MenuRectangleButton final : public MenuButton
 {
     public:
     
-    MenuRectangleButton(sf::RenderTarget* target, Vector2f pos,  Vector2f sz, const char* text, AbstractFunctor* action)
-    : MenuButton(target, pos, sz, text, action) 
+    MenuRectangleButton(sf::RenderTarget* target, Vector2f pos,  Vector2f sz, const char* text, AbstractFunctor* action, const RGB& color)
+    : MenuButton(target, pos, sz, text, action, color) 
     {
         scaleText();
     }

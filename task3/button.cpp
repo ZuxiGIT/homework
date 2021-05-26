@@ -1,3 +1,8 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
+
 #include "button.hpp"
 #include "color.hpp"
 #include <iostream>
@@ -13,7 +18,7 @@ void MenuEllipseButton::draw()
     sf::EllipseShape ellipse (sf::Vector2f(m_radius_a, m_radius_b), m_quality);
     
     ellipse.setPosition(m_position.x, m_position.y);
-    ellipse.setFillColor(RGB(0, 0, 255));
+    ellipse.setFillColor(m_color);
 
     m_target->draw(ellipse);
     m_target->draw(m_text);
@@ -83,7 +88,7 @@ void MenuRectangleButton::draw()
 {
     sf::RectangleShape Body {m_size};
     Body.setPosition(m_position);
-    Body.setFillColor(RGB(255, 0, 0));
+    Body.setFillColor(m_color);
     
     m_target->draw(Body);
 

@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "objects.hpp"
 #include "raytrace.hpp"
 #include "color.hpp"
@@ -20,12 +24,18 @@ Color Raytrace::BACKGROUND =  {0.2f, 0.7f, 0.8f};
 Color Raytrace::ray_cast(Ray& ray, float t_min, float t_max, const ObjectManager &objects, const LightManager &lights)
 {
     float min_dist = {};
-    const Drawable *closest_obj = nullptr;
+    const Drawable *closest_obj = NULL;
 
     _GET_RETURN_INTERSECT(min_dist, closest_obj, ray.closestIntersection(t_min, t_max, objects));
 
-    if (closest_obj == nullptr)
+    if (closest_obj == NULL)
         return BACKGROUND;
+    
+    // //if(closest_obj)
+    //     {
+    //         fprintf(stderr, "closest_obj %p\n", closest_obj);
+    //         fflush(0);
+    //     }
 
     sf::Vector3f point = ray.getPoint(min_dist);            // point intersection
     sf::Vector3f normal = closest_obj->getNormal(point);    // normal at point intersection

@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include <stdio.h>
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -12,7 +16,6 @@
 #include "functions.inl"
 #include "functors.hpp"
 //#include <GLM/glm.hpp>
-#include <GLEW/glew.h>
 #include <SFML/OpenGL.hpp>
 
 
@@ -24,11 +27,14 @@
 
 int main()
 {
-    RGB test1(67, 113, 4);
-    HSL test2 = RGB2HSL(test1);
-    RGB test3 = HSL2RGB(test2);
+    // std::cout << "sizeof(float) " << sizeof(float)<<" sizeof(double*) " << sizeof(double*) <<std::endl;  ---> sizeof(float) 4 sizeof(double*) 4 <-- WTF????
+    
+    
+    // RGB test1(67, 113, 4);
+    // HSL test2 = RGB2HSL(test1);
+    // RGB test3 = HSL2RGB(HSL {});
 
-    fprintf(stderr, "rgb (%u, %u, %u)\nhsl(%u, %u, %u)\nrgb (%u, %u, %u)\n", test1.r, test1.g, test1.b, test2.h, test2.s, test2.l, test3.r, test3.g, test3.b);
+    // fprintf(stderr, "rgb (%u, %u, %u)\nhsl(%u, %u, %u)\nrgb (%u, %u, %u)\n", test1.r, test1.g, test1.b, test2.h, test2.s, test2.l, test3.r, test3.g, test3.b);
     sf::ContextSettings settings;
 
     settings.depthBits = 0;
@@ -73,8 +79,8 @@ int main()
     ButtonManager& buttons = ButtonManager::createManager();
 
 
-    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20}, Vector2f{200, 20}, "test", &test} );
-    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2", &test});
+    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20}, Vector2f{200, 20}, "test", &test, HSL2RGB(HSL{164, 100,50 })} );
+    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2", &test, HSL2RGB(HSL{164 , 100,50 })});
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
