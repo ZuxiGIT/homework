@@ -1,9 +1,8 @@
 #pragma once
 #include <SFML/Graphics/Shape.hpp>
 #include "mymath.hpp"
-#define _USE_MATH_DEFINES
-#include <math.h>
 #include <cmath>
+// #define _USE_MATH_DEFINES
 
 namespace sf{
 
@@ -40,12 +39,30 @@ namespace sf{
 
         virtual Vector2f getPoint(size_t index) const override
         {
-            double angle = index * 2 * M_PI / getPointCount() - M_PI / 2;
+            static const double PI = 3.14159265;
+            
+            double angle = index * 2 * PI / getPointCount() - PI / 2;
 
             float x = static_cast<float>(cos(angle) * static_cast<float>(m_radius.x));
             float y = static_cast<float>(sin(angle) * static_cast<float>(m_radius.y));
 
             return Vector2f(m_radius.x + x, m_radius.y + y);
+        }
+
+        bool contains(const Vector2f& mouse_pos)
+        {
+            Vector2f size = {getLocalBounds().width, getLocalBounds().height};
+            Vector2f pos = getPosition();
+            float X = mouse_pos.x - (pos.x + size.x / 2);
+	        float Y = mouse_pos.y - (pos.y + size.y / 2);
+
+            double a = m_radius.x;
+            double b = m_radius.y;
+            double length = X * X / (a * a) + Y * Y / (b * b);
+            
+            if(length <= 1)
+                return true;
+            return false;
         }
     };
 }

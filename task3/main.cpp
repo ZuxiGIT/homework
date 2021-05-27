@@ -20,10 +20,9 @@
 
 
 // TODO 
+// remove setPosition / getPosition and so on methods and add sf::Transformable inheritance
 // improve text scaling
-// add RGB -> HSL
-// add HSL -> RGB
-// ----- add functors ---- done
+// improve TextField
 
 int main()
 {

@@ -14,32 +14,26 @@ sf::Font MenuButton::font = {};
 
 //----------------------------MenuEllipseButton----------------------------
 void MenuEllipseButton::draw() 
-{
-    sf::EllipseShape ellipse (sf::Vector2f(m_radius_a, m_radius_b), m_quality);
-    
-    ellipse.setPosition(m_position.x, m_position.y);
-    ellipse.setFillColor(m_background_color);
-
-
-    m_target->draw(ellipse);
+{    
+    m_target->draw(m_body);
     m_target->draw(m_text);
 }
 
 bool MenuEllipseButton::clicked(const Vector2f& mouse_pos)
 {
-	float X = mouse_pos.x - (m_position.x + m_size.x / 2);
-	float Y = mouse_pos.y - (m_position.y + m_size.y / 2);
+	// float X = mouse_pos.x - (m_position.x + m_size.x / 2);
+	// float Y = mouse_pos.y - (m_position.y + m_size.y / 2);
 
 
-	double a = m_radius_a;
-	double b = m_radius_b;
-    double length = X * X / (a * a) + Y * Y / (b * b);
+	// double a = ;
+	// double b = m_radius_b;
+    // double length = X * X / (a * a) + Y * Y / (b * b);
     
     // std::cout << "Mouse position: " << X<<", "<< Y<<std::endl;
 	// std::cout << "Formula is "<< X*X <<"/"<< a*a<<"+"<<Y*Y<<"/"<<b*b<<"="<< X * X / (a * a) + Y * Y / (b * b)<<std::endl;
 	// fprintf(stderr, "clicked ellipse, length is %f\n", length);
     
-    if (length <= 1)
+    if (m_body.contains(mouse_pos))
 	{
 		action();
 		return true;
@@ -49,6 +43,9 @@ bool MenuEllipseButton::clicked(const Vector2f& mouse_pos)
 
 void MenuEllipseButton::scaleText()
 {
+	Vector2f radisuses = m_body.getRadius();
+
+
 	double glyph_height = m_text.getCharacterSize();
 	double glyph_width 	= m_text.getCharacterSize() / 2;
 
@@ -58,7 +55,7 @@ void MenuEllipseButton::scaleText()
 	while(*str++)	num_of_glyphs++; 
 
 	double y = m_text.getCharacterSize() / 2;
-	double x = sqrt(1 -  y * y / m_radius_b / m_radius_b ) * m_radius_a;
+	double x = sqrt(1 -  y * y / radisuses.y / radisuses.y ) * radisuses.x;
 
 	double right_height = 2 * y;
 	double right_width 	= 2 * x;
@@ -141,36 +138,6 @@ void MenuRectangleButton::scaleText()
 	m_text.setScale(static_cast<float>(Xscale), static_cast<float>(Yscale));
 }
 
-
-//----------------------------MenuTextInputButton----------------------------
-
-void MenuTextInputButton::shiftText()
-{
-	Vector2f text_pos = m_text.getPosition();
-	text_pos.y = m_position.y;
-	m_text.setPosition(text_pos);
-}
-
-void MenuTextInputButton::draw()
-{
-	float text_height = static_cast<float>(m_text.getCharacterSize());
-	
-	Vector2f size = m_size;
-	size.y -= text_height - 5;
-	
-	Vector2f pos = m_position;
-	pos.y  += text_height + 5; 
-	
-	sf::RectangleShape Body {size};
-	Body.setFillColor(m_background_color);
-	Body.setPosition(pos);
-
-	m_target->draw(Body);
-	m_target->draw(m_text);
-}
-
-
-
 //----------------------------ButtonManager----------------------------
 void ButtonManager::add(AbstractButton* obj)
 {
@@ -189,4 +156,44 @@ ButtonManager::~ButtonManager()
 {
     for(size_t i = 0; i < m_count; i++)
         delete m_buttons[i];
+}
+
+//----------------------------TextField----------------------------
+void TextField::handleInput(sf::Event event)
+{
+	if(!m_hasfocus || event.type != sf::Event::TextEntered)
+		return;
+	if(event.text.unicode == 8) // Delete key
+		m_text = m_text.substr(0, m_text.size() - 1);
+	else if(m_text.size() < m_size)
+		m_text += static_cast<char>(event.text.unicode);
+
+}
+
+//----------------------------MenuTextInputButton----------------------------
+
+void MenuTextInputButton::shiftText()
+{
+	Vector2f text_pos = m_text.getPosition();
+	
+	text_pos.y = m_position.y;
+	
+	m_text.setPosition(text_pos);
+	
+	float text_height = static_cast<float>(m_text.getCharacterSize());
+
+	Vector2f size = m_size;
+	size.y -= text_height - 5;
+	
+	Vector2f pos = m_position;
+	pos.y  += text_height + 5; 
+
+	m_body.setPosition(pos);
+	m_body.setSize(size);
+}
+
+void MenuTextInputButton::draw()
+{
+	m_body.draw(*m_target);
+	m_target->draw(m_text);
 }

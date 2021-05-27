@@ -16,9 +16,9 @@ struct Vector2
     Vector2(const sf::Vector2i&);
     Vector2(const sf::Vector2u&);
     
-    operator sf::Vector2f ();
-    operator sf::Vector2i ();
-    operator sf::Vector2u ();
+    operator sf::Vector2f () const;
+    operator sf::Vector2i () const;
+    operator sf::Vector2u () const;
 
     Vector2<T> operator-() { return Vector2<T> (-x, -y); }
     Vector2<T>& operator+=(const Vector2<T>& that) { x += that.x; y += that.y; return *this; }
@@ -91,19 +91,19 @@ y(that.y)
 {}
 
 template<>
-inline Vector2f::operator sf::Vector2f()
+inline Vector2f::operator sf::Vector2f() const
 {
     return sf::Vector2f(x, y);
 }
 
 template<>
-inline Vector2i::operator sf::Vector2i()
+inline Vector2i::operator sf::Vector2i() const
 {
     return sf::Vector2i(x, y);
 }
 
 template<>
-inline Vector2u::operator sf::Vector2u()
+inline Vector2u::operator sf::Vector2u() const
 {
     return sf::Vector2u(x, y);
 }
