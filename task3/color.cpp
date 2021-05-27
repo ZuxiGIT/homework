@@ -48,7 +48,10 @@ HSL RGB2HSL(const RGB& rgb)
 
 RGB HSL2RGB(const HSL& hsl)
 {
-    if (hsl.s == 0) return RGB (0, 0, 0);
+    const float _EPS = static_cast<float>(1e-3);
+    
+    if (fabs(hsl.s) < _EPS) return RGB (0, 0, 0);
+
     struct CALC
     {
         static double calc(double component, double Q, double P)

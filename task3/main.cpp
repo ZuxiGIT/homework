@@ -79,8 +79,9 @@ int main()
     ButtonManager& buttons = ButtonManager::createManager();
 
 
-    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20}, Vector2f{200, 20}, "test", &test, HSL2RGB(HSL{164, 100,50 })} );
-    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2", &test, HSL2RGB(HSL{164 , 100,50 })});
+    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "test",     &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2",    &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
+    buttons.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "camera.x", nullptr, RGB(255, 0, 255) });
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
@@ -123,12 +124,14 @@ int main()
 
                 fprintf(stderr,"-----mouse position(%d, %d)\n", mouse.x, mouse.y);
                 
+                if(buttons.clicked(Vector2f(mouse.x, mouse.y)))
+                    continue;
                 if(canvas.isInCanvas(Vector2f(mouse.x, mouse.y)))
                 {
                     window.setMouseCursorVisible(false);
                     mouse_hidden = true;
+                    continue;
                 }
-                buttons.clicked(Vector2f(mouse.x, mouse.y));
 
             }
             else if (event.type == sf::Event::KeyPressed)

@@ -18,13 +18,14 @@ void MenuEllipseButton::draw()
     sf::EllipseShape ellipse (sf::Vector2f(m_radius_a, m_radius_b), m_quality);
     
     ellipse.setPosition(m_position.x, m_position.y);
-    ellipse.setFillColor(m_color);
+    ellipse.setFillColor(m_background_color);
+
 
     m_target->draw(ellipse);
     m_target->draw(m_text);
 }
 
-void MenuEllipseButton::clicked(const Vector2f& mouse_pos)
+bool MenuEllipseButton::clicked(const Vector2f& mouse_pos)
 {
 	float X = mouse_pos.x - (m_position.x + m_size.x / 2);
 	float Y = mouse_pos.y - (m_position.y + m_size.y / 2);
@@ -34,14 +35,16 @@ void MenuEllipseButton::clicked(const Vector2f& mouse_pos)
 	double b = m_radius_b;
     double length = X * X / (a * a) + Y * Y / (b * b);
     
-    std::cout << "Mouse position: " << X<<", "<< Y<<std::endl;
-	//std::cout << "Formula is "<< X*X <<"/"<< a*a<<"+"<<Y*Y<<"/"<<b*b<<"="<< X * X / (a * a) + Y * Y / (b * b)<<std::endl;
-	//fprintf(stderr, "clicked ellipse, length is %f\n", length);
+    // std::cout << "Mouse position: " << X<<", "<< Y<<std::endl;
+	// std::cout << "Formula is "<< X*X <<"/"<< a*a<<"+"<<Y*Y<<"/"<<b*b<<"="<< X * X / (a * a) + Y * Y / (b * b)<<std::endl;
+	// fprintf(stderr, "clicked ellipse, length is %f\n", length);
     
     if (length <= 1)
 	{
 		action();
+		return true;
 	}
+	return false;
 }
 
 void MenuEllipseButton::scaleText()
@@ -88,14 +91,14 @@ void MenuRectangleButton::draw()
 {
     sf::RectangleShape Body {m_size};
     Body.setPosition(m_position);
-    Body.setFillColor(m_color);
+    Body.setFillColor(m_background_color);
     
     m_target->draw(Body);
 
     m_target->draw(m_text);
 }
 
-void MenuRectangleButton::clicked(const Vector2f& mouse_pos)
+bool MenuRectangleButton::clicked(const Vector2f& mouse_pos)
 {
     float X = mouse_pos.x - m_position.x;
     float Y = mouse_pos.y - m_position.y;
@@ -104,7 +107,9 @@ void MenuRectangleButton::clicked(const Vector2f& mouse_pos)
 		 Y > 0 && Y < m_size.y)
 	{
 		action();
+		return true;
 	}
+	return false;
 }
 
 void MenuRectangleButton::scaleText()
@@ -126,8 +131,8 @@ void MenuRectangleButton::scaleText()
 	double Xoffset = (m_size.x - num_of_glyphs * glyph_width) / 2;
 	double Yoffset = (m_size.y - glyph_height) / 2;
 
-	Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset???
-	Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
+	// Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset???
+	// Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
 
     fprintf(stderr, "--------rectangle: offset parametres (%lf, %lf)\n", Xoffset, Yoffset);
 	fflush(NULL);
@@ -136,6 +141,36 @@ void MenuRectangleButton::scaleText()
 	m_text.setScale(static_cast<float>(Xscale), static_cast<float>(Yscale));
 }
 
+
+//----------------------------MenuTextInputButton----------------------------
+
+void MenuTextInputButton::shiftText()
+{
+	Vector2f text_pos = m_text.getPosition();
+	text_pos.y = m_position.y;
+	m_text.setPosition(text_pos);
+}
+
+void MenuTextInputButton::draw()
+{
+	float text_height = static_cast<float>(m_text.getCharacterSize());
+	
+	Vector2f size = m_size;
+	size.y -= text_height - 5;
+	
+	Vector2f pos = m_position;
+	pos.y  += text_height + 5; 
+	
+	sf::RectangleShape Body {size};
+	Body.setFillColor(m_background_color);
+	Body.setPosition(pos);
+
+	m_target->draw(Body);
+	m_target->draw(m_text);
+}
+
+
+
 //----------------------------ButtonManager----------------------------
 void ButtonManager::add(AbstractButton* obj)
 {
@@ -143,10 +178,12 @@ void ButtonManager::add(AbstractButton* obj)
     m_buttons.push_back(obj);
 }
 
-void ButtonManager::clicked(const Vector2f& mouse_pos)
+bool ButtonManager::clicked(const Vector2f& mouse_pos)
 {
     for(size_t i = 0; i < m_count; i++)
-        m_buttons[i]->clicked(mouse_pos);
+		if(m_buttons[i]->clicked(mouse_pos))
+			return true;
+	return false;
 }
 ButtonManager::~ButtonManager()
 {
