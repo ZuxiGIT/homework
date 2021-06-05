@@ -119,13 +119,13 @@ int main()
                         event.mouseButton.button == sf::Mouse::Left)
             {
                 
-                sf::Vector2i mouse = sf::Mouse::getPosition(window);
+                Vector2f mouse_pos = sf::Mouse::getPosition(window);
 
-                fprintf(stderr,"-----mouse position(%d, %d)\n", mouse.x, mouse.y);
+                fprintf(stderr,"-----mouse position(%f, %f)\n", mouse_pos.x, mouse_pos.y);
                 
-                if(buttons.clicked(Vector2f(mouse.x, mouse.y)))
+                if(buttons.update(event))
                     continue;
-                if(canvas.isInCanvas(Vector2f(mouse.x, mouse.y)))
+                if(canvas.isInCanvas(mouse_pos))
                 {
                     window.setMouseCursorVisible(false);
                     mouse_hidden = true;
@@ -145,7 +145,7 @@ int main()
         
         window.clear(Color(0.2f, 0.3f, 0.3f));
         canvas.draw(window);
-        buttons.draw();
+        buttons.render();
         window.display();
     }
 

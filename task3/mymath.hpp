@@ -77,10 +77,31 @@ y(that.y)
 {}
 
 template <>
+inline Vector2f::Vector2(const sf::Vector2i& that)
+:
+x(static_cast<float>(that.x)),
+y(static_cast<float>(that.y))
+{}
+
+template <>
+inline Vector2f::Vector2(const sf::Vector2u& that)
+:
+x(static_cast<float>(that.x)),
+y(static_cast<float>(that.y))
+{}
+
+template <>
 inline Vector2i::Vector2(const sf::Vector2i& that)
 :
 x(that.x),
 y(that.y)
+{}
+
+template <>
+inline Vector2i::Vector2(const sf::Vector2u& that)
+:
+x(static_cast<int>(that.x)),
+y(static_cast<int>(that.y))
 {}
 
 template <>
@@ -107,6 +128,7 @@ inline Vector2u::operator sf::Vector2u() const
 {
     return sf::Vector2u(x, y);
 }
+
 template <typename T>
 struct Vector3
 {
