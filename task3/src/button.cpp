@@ -21,17 +21,20 @@ void MenuEllipseButton::render()
 
 bool MenuEllipseButton::update(const sf::Event& event)
 {
-	// float X = mouse_pos.x - (m_position.x + m_size.x / 2);
-	// float Y = mouse_pos.y - (m_position.y + m_size.y / 2);
+	#if 0 
+	float X = mouse_pos.x - (m_position.x + m_size.x / 2);
+	float Y = mouse_pos.y - (m_position.y + m_size.y / 2);
 
 
-	// double a = ;
-	// double b = m_radius_b;
-	// double length = X * X / (a * a) + Y * Y / (b * b);
+	double a = ;
+	double b = m_radius_b;
+	double length = X * X / (a * a) + Y * Y / (b * b);
 
-	// std::cout << "Mouse position: " << X<<", "<< Y<<std::endl;
-	// std::cout << "Formula is "<< X*X <<"/"<< a*a<<"+"<<Y*Y<<"/"<<b*b<<"="<< X * X / (a * a) + Y * Y / (b * b)<<std::endl;
-	// fprintf(stderr, "clicked ellipse, length is %f\n", length);
+	std::cout << "Mouse position: " << X<<", "<< Y<<std::endl;
+	std::cout << "Formula is "<< X*X <<"/"<< a*a<<"+"<<Y*Y<<"/"<<b*b<<"="<< X * X / (a * a) + Y * Y / (b * b)<<std::endl;
+	fprintf(stderr, "clicked ellipse, length is %f\n", length);
+	#endif
+
 	Vector2f mouse_pos = sf::Mouse::getPosition(*m_target);
 
 	if (m_body.contains(mouse_pos))
@@ -173,28 +176,28 @@ void TextField::handleInput(sf::Event event)
 
 void MenuTextInputButton::scaleText()
 {
-	Vector2f text_pos = m_text.getPosition();
 	Vector2f position = m_bounding_rec.getPosition();
+	m_text.setPosition(position);
+
+	float text_offset = (m_bounding_rec.getGlobalBounds().width -  m_text.getGlobalBounds().width) / 2.f;
+	m_text.move(Vector2f(text_offset, 0));
+
+	float text_height = m_text.getGlobalBounds().height;
+
 	Vector2f size = m_bounding_rec.getSize();
 
-	text_pos.y = position.y;
+	size.y -= text_height;
 	
-	m_text.setPosition(text_pos);
-	
-	float text_height = static_cast<float>(m_text.getCharacterSize());
+	Vector2f box_position = position;
+	box_position.y  += text_height; 
 
-
-	size.y -= text_height - 5;
-	
-	Vector2f pos = position;
-	pos.y  += text_height + 5; 
-
-	m_body.setPosition(pos);
+	m_body.setPosition(box_position);
 	m_body.setSize(size);
 }
 
 void MenuTextInputButton::render()
 {
 	m_body.draw(*m_target);
+	m_target->draw(m_bounding_rec);
 	m_target->draw(m_text);
 }

@@ -247,6 +247,12 @@ public:
 	m_body(pos, sz.x / 10.f)
 	{
 		m_bounding_rec.setPosition(pos);
+		
+		m_bounding_rec.setOutlineThickness(2);
+		m_bounding_rec.setOutlineColor(RGB(255, 0, 0));
+		
+		m_bounding_rec.setFillColor(sf::Color::Transparent);
+		
 		scaleText();
 	}
 
