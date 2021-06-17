@@ -6,7 +6,7 @@
 #include "functions.inl"
 
 
-int Ray::recursion_depth = 4;
+int Ray::recursion_depth = 1;
 
 Ray::Ray(const sf::Vector3f &origin, const sf::Vector3f &direction)
 : 

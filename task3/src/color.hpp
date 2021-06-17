@@ -86,7 +86,9 @@ struct RGB
 
     RGB(BYTE R, BYTE G, BYTE B) : r(R), g(G), b(B) {}
 
+    
     RGB(const RGB& that) : r(that.r), g(that.g), b(that.b) {}
+    RGB(const RGB&& that) : r(that.r), g(that.g), b(that.b) {}
     
     //RGB(const sf::Color& that) : r(that.r), g(that.g), b(that.b) {}
     RGB(const Color& that) :    r(static_cast<BYTE>(that.r * 255)),
@@ -94,6 +96,10 @@ struct RGB
                                 b(static_cast<BYTE>(that.b * 255)) {}
     
     RGB& operator=(const RGB& obj) {  r = obj.r; g = obj.g; b = obj.b; return *this; }
+    RGB& operator=(const RGB&& obj) {  r = obj.r; g = obj.g; b = obj.b; return *this; }
+
+
+    RGB operator!() { return RGB(255 - r, 255 - g, 255 - b); }
 
     RGB operator+(const RGB& obj)  { return RGB(    static_cast<BYTE>(r + obj.r),       // r + obj.r > 1 ? 1 : r + obj.r 
                                                     static_cast<BYTE>(g + obj.g),       // g + obj.g > 1 ? 1 : g + obj.g

@@ -35,11 +35,28 @@ bool MenuEllipseButton::update(const sf::Event& event)
 
 	Vector2f mouse_pos = sf::Mouse::getPosition(*m_target);
 
-	if (m_body.contains(mouse_pos))
+	if (!m_body.getGlobalBounds().contains(mouse_pos))
 	{
+		m_body.setOutlineColor(sf::Color::Transparent);
+		m_body.setFillColor(m_background_color);
+		
+		return false;
+	}
+	
+	m_body.setOutlineColor(RGB(0, 0, 255));
+	
+	if(	(event.type == sf::Event::MouseButtonPressed) && 
+	(event.mouseButton.button == sf::Mouse::Left))
+		m_body.setFillColor(!RGB(m_background_color));
+	
+	if(	(event.type == sf::Event::MouseButtonReleased) && 
+		(event.mouseButton.button == sf::Mouse::Left))
+	{
+		m_body.setFillColor(m_background_color);
 		action();
 		return true;
 	}
+
 	return false;
 }
 
@@ -98,11 +115,28 @@ bool MenuRectangleButton::update(const sf::Event& event)
 {
 	Vector2f mouse_pos = sf::Mouse::getPosition(*m_target);
 
-	if ( m_body.getGlobalBounds().contains(mouse_pos))
+	if (!m_body.getGlobalBounds().contains(mouse_pos))
 	{
+		m_body.setOutlineColor(sf::Color::Transparent);
+		m_body.setFillColor(m_background_color);
+		
+		return false;
+	}
+	
+	m_body.setOutlineColor(RGB(0, 0, 255));
+	
+	if(	(event.type == sf::Event::MouseButtonPressed) && 
+	(event.mouseButton.button == sf::Mouse::Left))
+		m_body.setFillColor(!RGB(m_background_color));
+	
+	if(	(event.type == sf::Event::MouseButtonReleased) && 
+		(event.mouseButton.button == sf::Mouse::Left))
+	{
+		m_body.setFillColor(m_background_color);
 		action();
 		return true;
 	}
+
 	return false;
 }
 

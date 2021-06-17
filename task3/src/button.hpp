@@ -101,6 +101,8 @@ public:
 	{
 		m_body.setPosition(pos);
 		m_body.setFillColor(background_color);
+		m_body.setOutlineThickness(2);
+		m_body.setOutlineColor(sf::Color::Transparent);
 
 		scaleText();
 	}
@@ -138,6 +140,9 @@ public:
 	{
 		m_body.setPosition(pos);
 		m_body.setFillColor(m_background_color);
+		m_body.setOutlineThickness(2);
+		m_body.setOutlineColor(sf::Color::Transparent);
+
 		scaleText();
 	}
 
@@ -146,7 +151,7 @@ public:
 	virtual void render() override;
 	virtual bool update(const sf::Event& event) override;
 	virtual void scaleText() override;
-	
+
 };
 
 class ButtonManager
@@ -189,7 +194,7 @@ class TextField //: public sf::Transformable
 
 	void shiftBodyText()
 	{
-		m_body_text.move(Vector2f(	(m_body.getSize().x - static_cast<float>(m_size) * m_body_text.getCharacterSize() / 2.f) / 2.f, 
+		m_body_text.move(Vector2f(	(m_body.getSize().x - static_cast<float>(m_size) * static_cast<float>(m_body_text.getCharacterSize()) / 2.f) / 2.f, 
 									(m_body.getSize().y - static_cast<float>(m_body_text.getCharacterSize())) / 2.f));
 	}
 
@@ -277,8 +282,8 @@ public:
 
 	void setSize(const Vector2f& size)
 	{
-		float xTextScale = size.x / (static_cast<float>(m_size) * m_body_text.getCharacterSize() / 2.f);
-		float yTextScale = size.y / m_body_text.getCharacterSize();
+		float xTextScale = size.x / (static_cast<float>(m_size) * static_cast<float>(m_body_text.getCharacterSize()) / 2.f);
+		float yTextScale = size.y / static_cast<float>(m_body_text.getCharacterSize());
 		
 		if((xTextScale <= 1) && (yTextScale <= 1))
 			m_body_text.scale(Vector2f(xTextScale, yTextScale));
@@ -328,5 +333,4 @@ public:
 	virtual void scaleText() override;
 	virtual void render() override;
 	virtual bool update(const sf::Event& event) override ;
-
 };

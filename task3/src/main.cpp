@@ -99,7 +99,7 @@ int main()
         float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
         Clock.restart();
 
-        //fprintf(stderr, "Framrate: %lf\r", Framerate);
+        fprintf(stderr, "Framrate: %lf\r", Framerate);
 
         sf::Event event;
 

@@ -49,6 +49,8 @@ namespace sf{
             return Vector2f(m_radius.x + x, m_radius.y + y);
         }
 
+        // deprecated because sf::Shape has getGlobalBounds().contains()
+        #if 0 
         bool contains(const Vector2f& mouse_pos)
         {
             Vector2f size = {getLocalBounds().width, getLocalBounds().height};
@@ -64,5 +66,6 @@ namespace sf{
                 return true;
             return false;
         }
+        #endif
     };
 }

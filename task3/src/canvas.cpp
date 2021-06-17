@@ -29,8 +29,8 @@ void Canvas::setPixel(unsigned int x, unsigned int y, RGB pixel)
 void Canvas::renderer()
 {
    
-    for (size_t line = 0; line < m_height; line++)
-        for(size_t column = 0; column < m_width; column++)
+    for (size_t line = 0; line < m_height; line+=2)
+        for(size_t column = 0; column < m_width; column+=2)
         {
             sf::Vector3f dir  = m_camera->CanvasToViewPort(column, line);
             sf::Vector3f origin  = m_camera->getPosition();
@@ -38,7 +38,11 @@ void Canvas::renderer()
             Ray ray(origin, dir);
             RGB res = Raytrace::ray_cast(ray, 1, _INFINITY, *m_objects, *m_lights);
             
-            setPixel(column, line, res);
+            setPixel(column + 1, line,     res);
+            setPixel(column + 1, line + 1, res);
+            setPixel(column,     line + 1, res);
+            setPixel(column,     line,     res);
+
         }
     
     for (size_t line = 0; line < m_height; line++)
