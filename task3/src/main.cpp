@@ -74,13 +74,20 @@ int main()
 
     TestFunctor test {&window, &objects, &lights};
     
+    float test_number = 10;
+    SetValueFunctor<float> test2 {&test_number};
+    SetValueFunctor<float> test3 {&test_number};
+    SetValueFunctor<float> test4 {&test_number};
+
     MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
     ButtonManager& buttons = ButtonManager::createManager();
 
 
-    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "test",     &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
-    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2",    &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
-    buttons.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(100,100),   "camera.x", nullptr, RGB(255, 0, 255) });
+    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "test",         &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2",        &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
+    buttons.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "test)number", &test2, RGB(255, 0, 255) });
+    buttons.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "test)number", &test3, RGB(255, 0, 255) });
+    buttons.add(new MenuTextInputButton {&window, Vector2f(500, 700), Vector2f(200,100),  "test)number", &test4, RGB(255, 0, 255) });
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
@@ -149,10 +156,10 @@ int main()
 
         
         window.clear(Color(0.2f, 0.3f, 0.3f));
-        //canvas.draw(window);
+        // canvas.draw(window);
         buttons.render();
         window.display();
-    }
+    } 
 
     return 0;
 }

@@ -6,6 +6,7 @@
 
 class Camera : public NonCopyable
 {
+public:
     sf::Vector3f m_position = {};
     sf::Vector3f m_direction = {};
     sf::Vector3f m_camera_up = {};
@@ -14,7 +15,6 @@ class Camera : public NonCopyable
 
     Vector2f rot(float a);
     
-public:
     sf::Vector3f getPosition() { return m_position; }
     void setCanvasSize(unsigned int width, unsigned int height);
     explicit Camera(const sf::Vector3f& position, const sf::Vector3f& direction);

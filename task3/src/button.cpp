@@ -4,7 +4,7 @@
 
 
 #include "button.hpp"
-#include <iostream>
+#include <string>
 #include <SFML/Graphics/RectangleShape.hpp>
 
 
@@ -159,23 +159,57 @@ ButtonManager::~ButtonManager()
 }
 
 //----------------------------TextField----------------------------
-void TextField::handleInput(sf::Event event)
+void TextField::handleInput(const sf::Event& event)
 {
 	if(!m_hasfocus || event.type != sf::Event::TextEntered)
 		return;
-	
-	// 13 ---> enter
-	if(event.text.unicode == 8) // Delete key
-		m_text = m_text.substr(0, m_text.size() - 1);
-	else if(m_text.size() < m_size)
-		if((event.text.unicode >= 48) && (event.text.unicode <= 57))
-			m_text += static_cast<char>(event.text.unicode);
 
+	// 13 ---> enter
+	if(event.text.unicode == 13)
+	{
+		if(m_text.empty())
+			return;
+		
+		m_output_string = m_text;
+		
+		m_has_output = true;
+		
+		m_body_text.setFillColor(RGB(127, 127, 127));
+		m_body_text.setString(m_text);
+		
+		// setFocus(false);
+
+		return;
+	}
+	
+	// 8 ---> Delete key
+	if(m_has_output)
+		return;
+
+	if(event.text.unicode == 8)
+	{
+		m_text = m_text.substr(0, m_text.size() - 1);
+	}
+	else if(m_text.size() < m_size)
+	{
+		if(	(event.text.unicode >= '0') && (event.text.unicode <= '9') )	
+			m_text += static_cast<char>(event.text.unicode);
+		else if(event.text.unicode == '-')
+			if(m_text.find('-') == std::string::npos)
+				m_text += static_cast<char>(event.text.unicode);
+	}
 	m_body_text.setString(m_text);
 }
 
-//----------------------------MenuTextInputButton----------------------------
+std::string TextField::getOutput()
+{
+	std::string temp = m_output_string;
+	m_output_string.clear();
+	m_has_output = false;
+	return temp;
+}
 
+//----------------------------MenuTextInputButton----------------------------
 void MenuTextInputButton::scaleText()
 {
 	Vector2f position = m_bounding_rec.getPosition();
@@ -212,6 +246,9 @@ void MenuTextInputButton::scaleText()
 
 void MenuTextInputButton::render()
 {
+	if(!m_body.hasFocus())
+		m_body.setBodyText(std::to_string(getParameter()));
+
 	m_target->draw(m_bounding_rec);
 	m_body.draw(*m_target);
 	m_target->draw(m_text);
@@ -235,7 +272,19 @@ bool MenuTextInputButton::update(const sf::Event& event)
 		(event.type == sf::Event::KeyPressed) &&
 		(event.key.code == sf::Keyboard::Escape))
 	{
+		
+		if(m_body.hasOutput())
+		{
+			std::string result = m_body.getOutput();
+			fprintf(stderr, "Output is %s\n", result.c_str());
+			
+			float result_number = std::stof(result);
+			action(&result_number);
+			m_body.setBodyText(std::to_string(getParameter()));
+		}
+
 		m_body.setFocus(false);
+
 		return true;
 	}
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <assert.h>
 #include "mymath.hpp"
 #include "color.hpp"
 #include <vector>
@@ -48,7 +49,7 @@ public:
 	ActionButton(const ActionButton&) = delete;
 	ActionButton& operator=(const ActionButton&) = delete;
 
-	virtual void action() { if(m_action) (*m_action)(); }
+	virtual void action(void* const arg = NULL ) { if(m_action) (*m_action)(arg); }
 
 	void setAction(AbstractFunctor* action) { m_action = action; }
 
@@ -145,6 +146,7 @@ public:
 	virtual void render() override;
 	virtual bool update(const sf::Event& event) override;
 	virtual void scaleText() override;
+	
 };
 
 class ButtonManager
@@ -179,6 +181,8 @@ class TextField //: public sf::Transformable
 	Vector2f m_position = {};
 	size_t m_size = {};
 	std::string m_text = {};
+	std::string m_output_string = {};
+	bool m_has_output = false;
 	sf::Text m_body_text = {};
 	sf::RectangleShape m_body;
 	bool m_hasfocus = false;
@@ -198,7 +202,7 @@ public:
 	m_body(Vector2f(width, 2.f * static_cast<float>(character_size)))
 	{
 		m_body_text.setPosition(pos);
-		m_body_text.setFillColor(RGB(0, 0, 0));
+		m_body_text.setFillColor(RGB(127, 127, 127));
 		m_body_text.setCharacterSize(character_size);
 
 		m_body.setFillColor(RGB(255, 255,255));
@@ -209,7 +213,18 @@ public:
 		shiftBodyText();
 	}
 
-	void handleInput(sf::Event event);
+	std::string getOutput();
+	void handleInput(const sf::Event& event);
+
+	void setBodyText(const std::string& text)
+	{
+		m_body_text.setString(text.substr(0, m_size));
+	}
+
+	bool hasOutput()
+	{
+		return m_has_output;
+	}
 
 	const std::string getText() const
 	{
@@ -230,9 +245,23 @@ public:
 	{
 		m_hasfocus = focus;
 		if(focus)
+		{
+			m_text.clear();
+			
+			m_has_output = false;
+			
+			m_output_string.clear();
+			
+			m_body_text.setString(m_text);
+			m_body_text.setFillColor(RGB(0, 0, 0));
+
 			m_body.setOutlineColor(RGB(0, 0, 255));
+		}
 		else
+		{
+			m_body_text.setFillColor(RGB(127, 127, 127));
 			m_body.setOutlineColor(sf::Color::Transparent);
+		}
 	}
 
 	void setPosition(const Vector2f& pos) 
@@ -261,12 +290,15 @@ public:
 	void draw(sf::RenderTarget& target) { target.draw(m_body); target.draw(m_body_text); }
 };
 
-
-
-class MenuTextInputButton : public MenuButton
+class MenuTextInputButton final : public MenuButton
 {
 	sf::RectangleShape m_bounding_rec;
 	TextField m_body;
+
+	float getParameter()
+	{
+		return (*(reinterpret_cast<SetValueFunctor<float>*>(m_action))).getParameter();
+	}
 public:
 
 	MenuTextInputButton(sf::RenderWindow* target, Vector2f pos,  Vector2f sz, const char* text,
@@ -276,6 +308,9 @@ public:
 	m_bounding_rec(sz),
 	m_body(pos, sz.x, m_text.getCharacterSize())
 	{
+
+		assert(dynamic_cast<SetValueFunctor<float>*>(action) && "Functor must be SetValueFunctor<float> type");
+
 		m_bounding_rec.setPosition(pos);
 		m_bounding_rec.setOutlineColor(sf::Color::Green);
 		m_bounding_rec.setFillColor(sf::Color::Transparent);
