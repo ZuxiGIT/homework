@@ -70,10 +70,10 @@ public:
 	:
 	ActionButton(target, action), 
 	m_background_color(background_color),
-	m_text_color(text_color)
+	m_text_color(text_color),
+	m_text(sf::Text(text, font))
 	{
-		m_text = sf::Text(text, font);
-		m_text.setCharacterSize(20);
+		m_text.setCharacterSize(30);
 		m_text.setFillColor(m_text_color);
 	}
 
@@ -178,22 +178,35 @@ class TextField //: public sf::Transformable
 {
 	Vector2f m_position = {};
 	size_t m_size = {};
-	sf::Font m_font = MenuButton::font;
 	std::string m_text = {};
+	sf::Text m_body_text = {};
 	sf::RectangleShape m_body;
 	bool m_hasfocus = false;
 
+	void shiftBodyText()
+	{
+		m_body_text.move(Vector2f(	(m_body.getSize().x - static_cast<float>(m_size) * m_body_text.getCharacterSize() / 2.f) / 2.f, 
+									(m_body.getSize().y - static_cast<float>(m_body_text.getCharacterSize())) / 2.f));
+	}
+
 public:
-	TextField(Vector2f pos, size_t max_chars)
+	TextField(Vector2f pos, float width, int character_size)
 	:
 	m_position(pos),
-	m_size(max_chars),
-	m_body(Vector2f( 10.f * static_cast<float>(max_chars), 20))
+	m_size(static_cast<size_t>(width / (static_cast<float>(character_size) / 2.f))),
+	m_body_text(m_text, MenuButton::font),
+	m_body(Vector2f(width, 2.f * static_cast<float>(character_size)))
 	{
-		m_body.setOutlineThickness(2);
+		m_body_text.setPosition(pos);
+		m_body_text.setFillColor(RGB(0, 0, 0));
+		m_body_text.setCharacterSize(character_size);
+
 		m_body.setFillColor(RGB(255, 255,255));
-		m_body.setOutlineColor(RGB(127, 127, 127));
-		m_body.setPosition(m_position);
+		m_body.setOutlineThickness(2);
+		m_body.setOutlineColor(sf::Color::Transparent);
+		m_body.setPosition(pos);
+
+		shiftBodyText();
 	}
 
 	void handleInput(sf::Event event);
@@ -208,27 +221,44 @@ public:
 		return m_body.getGlobalBounds().contains(mouse_pos);
 	}
 
+	bool hasFocus()
+	{
+		return m_hasfocus;
+	}
+
 	void setFocus(bool focus)
 	{
 		m_hasfocus = focus;
 		if(focus)
 			m_body.setOutlineColor(RGB(0, 0, 255));
 		else
-			m_body.setOutlineColor(RGB(127, 127, 127));
+			m_body.setOutlineColor(sf::Color::Transparent);
 	}
 
 	void setPosition(const Vector2f& pos) 
-	{ 
-		m_position = pos; 
-		m_body.setPosition(m_position); 
+	{
+		m_position = pos;
+		m_body.setPosition(pos);
+		m_body_text.setPosition(pos);
+
+		shiftBodyText();
 	}
 
 	Vector2f getPostion() { return m_position; }
 
-	void setSize(const Vector2f& size) { m_body.setSize(size); }
+	void setSize(const Vector2f& size)
+	{
+		float xTextScale = size.x / (static_cast<float>(m_size) * m_body_text.getCharacterSize() / 2.f);
+		float yTextScale = size.y / m_body_text.getCharacterSize();
+		
+		if((xTextScale <= 1) && (yTextScale <= 1))
+			m_body_text.scale(Vector2f(xTextScale, yTextScale));
+		
+		m_body.setSize(size);
+	}
 	Vector2f getSize() { return m_body.getSize(); }
 
-	void draw(sf::RenderTarget& target) { target.draw(m_body); }
+	void draw(sf::RenderTarget& target) { target.draw(m_body); target.draw(m_body_text); }
 };
 
 
@@ -244,31 +274,24 @@ public:
 	:
 	MenuButton(target, text, action, RGB(255, 255, 255), text_color),
 	m_bounding_rec(sz),
-	m_body(pos, sz.x / 10.f)
+	m_body(pos, sz.x, m_text.getCharacterSize())
 	{
 		m_bounding_rec.setPosition(pos);
-		
-		m_bounding_rec.setOutlineThickness(2);
-		m_bounding_rec.setOutlineColor(RGB(255, 0, 0));
-		
+		m_bounding_rec.setOutlineColor(sf::Color::Green);
 		m_bounding_rec.setFillColor(sf::Color::Transparent);
 		
+		// fprintf(stderr, "before width camera.x %f\n", m_text.getGlobalBounds().width);	
+		
 		scaleText();
+		
+		// fprintf(stderr, "after width camera.x %f\n", m_text.getGlobalBounds().width);	
+		
+		m_bounding_rec.setOutlineThickness(2);
+
 	}
 
 	virtual void scaleText() override;
 	virtual void render() override;
-	virtual bool update(const sf::Event& event) override 
-	{ 
-		Vector2f mouse_pos = sf::Mouse::getPosition(*m_target);
-
-		if(m_body.contains(mouse_pos))
-		{
-			m_body.setFocus(true);
-			m_body.handleInput(event);
-			return true;
-		}
-		return false;
-	}
+	virtual bool update(const sf::Event& event) override ;
 
 };

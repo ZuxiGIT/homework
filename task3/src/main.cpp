@@ -80,7 +80,7 @@ int main()
 
     buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "test",     &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
     buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2",    &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
-    buttons.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "camera.x", nullptr, RGB(255, 0, 255) });
+    buttons.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(100,100),   "camera.x", nullptr, RGB(255, 0, 255) });
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
@@ -92,18 +92,15 @@ int main()
         float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
         Clock.restart();
 
-        fprintf(stderr, "Framrate: %lf\r", Framerate);
+        //fprintf(stderr, "Framrate: %lf\r", Framerate);
 
         sf::Event event;
 
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed || ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Escape) \
-            && !mouse_hidden))
-                window.close();
-            else if (event.type == sf::Event::MouseMoved)
+            if (mouse_hidden && (event.type == sf::Event::MouseMoved))
             {
-                if(mouse_hidden && !(static_cast<float>(event.mouseMove.x) < _EPS) && !(static_cast<float>(event.mouseMove.y) < _EPS))
+                if(!(static_cast<float>(event.mouseMove.x) < _EPS) && !(static_cast<float>(event.mouseMove.y) < _EPS))
                 {
                     float mx = static_cast<float>(event.mouseMove.x) / 1080.f - 0.5f;
                     float my = static_cast<float>(event.mouseMove.y) / 1080.f - 0.5f;
@@ -114,37 +111,45 @@ int main()
                     camera.rotate(mx, my);
                     sf::Mouse::setPosition(sf::Vector2i(540, 540), window);
                 }
+                continue;
             }
-            else if (   event.type == sf::Event::MouseButtonPressed &&
-                        event.mouseButton.button == sf::Mouse::Left)
+            if (event.type == sf::Event::KeyPressed)
             {
-                
-                Vector2f mouse_pos = sf::Mouse::getPosition(window);
-
-                fprintf(stderr,"-----mouse position(%f, %f)\n", mouse_pos.x, mouse_pos.y);
-                
-                if(buttons.update(event))
-                    continue;
-                if(canvas.isInCanvas(mouse_pos))
-                {
-                    window.setMouseCursorVisible(false);
-                    mouse_hidden = true;
-                    continue;
-                }
-
-            }
-            else if (event.type == sf::Event::KeyPressed)
                 if(event.key.code == sf::Keyboard::Escape && mouse_hidden)
                 {
                     window.setMouseCursorVisible(true);
                     mouse_hidden = false;
+                    continue;
                 }
+            }
 
+            Vector2f mouse_pos = sf::Mouse::getPosition(window);
+
+            fprintf(stderr,"-----mouse position(%f, %f)\n", mouse_pos.x, mouse_pos.y);
+            
+            if(buttons.update(event))
+                continue;
+            if((event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Button::Left))
+                if(canvas.isInCanvas(mouse_pos))
+                    {
+                        window.setMouseCursorVisible(false);
+                        mouse_hidden = true;
+                        continue;
+                    }
+
+            if ((event.type == sf::Event::Closed) || 
+                (   (event.type == sf::Event::KeyPressed) && 
+                    (event.key.code == sf::Keyboard::Escape) && 
+                        !mouse_hidden))
+            {
+                window.close();
+                continue;
+            }
         }
 
         
         window.clear(Color(0.2f, 0.3f, 0.3f));
-        canvas.draw(window);
+        //canvas.draw(window);
         buttons.render();
         window.display();
     }

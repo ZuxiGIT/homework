@@ -4,9 +4,7 @@
 
 
 #include "button.hpp"
-#include "color.hpp"
 #include <iostream>
-#include "sfmlExtend.hpp"
 #include <SFML/Graphics/RectangleShape.hpp>
 
 
@@ -66,8 +64,8 @@ void MenuEllipseButton::scaleText()
 	double right_height = 2 * y;
 	double right_width 	= 2 * x;
 
-	fprintf(stderr, "ellipse: right size (%lf, %lf)\n", right_width, right_height);
-	fprintf(stderr, "ellipse: glyph str size (%lf, %lf\n", num_of_glyphs * glyph_width, glyph_height);
+	// fprintf(stderr, "ellipse: right size (%lf, %lf)\n", right_width, right_height);
+	// fprintf(stderr, "ellipse: glyph str size (%lf, %lf\n", num_of_glyphs * glyph_width, glyph_height);
 
 	double Xscale =  right_width 	/ (num_of_glyphs * glyph_width);
 	double Yscale =	 right_height 	/ (glyph_height);
@@ -81,7 +79,7 @@ void MenuEllipseButton::scaleText()
 	Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset??? 
 	Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
 
-	fprintf(stderr, "ellipse: scale parametres (%lf, %lf)\nellipse: offset parametres (%lf, %lf)\n", Xscale, Yscale, Xoffset, Yoffset);
+	// fprintf(stderr, "ellipse: scale parametres (%lf, %lf)\nellipse: offset parametres (%lf, %lf)\n", Xscale, Yscale, Xoffset, Yoffset);
 	m_text.setPosition(static_cast<float>(position.x + Xoffset), static_cast<float>(position.y + Yoffset));
 	m_text.setScale(static_cast<float>(Xscale), static_cast<float>(Yscale));
 
@@ -133,8 +131,8 @@ void MenuRectangleButton::scaleText()
 	// Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset???
 	// Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
 
-	fprintf(stderr, "--------rectangle: offset parametres (%lf, %lf)\n", Xoffset, Yoffset);
-	fflush(NULL);
+	// fprintf(stderr, "--------rectangle: offset parametres (%lf, %lf)\n", Xoffset, Yoffset);
+	// fflush(NULL);
 
 	m_text.setPosition(static_cast<float>(position.x + Xoffset), static_cast<float>(position.y + Yoffset));
 	m_text.setScale(static_cast<float>(Xscale), static_cast<float>(Yscale));
@@ -165,11 +163,15 @@ void TextField::handleInput(sf::Event event)
 {
 	if(!m_hasfocus || event.type != sf::Event::TextEntered)
 		return;
+	
+	// 13 ---> enter
 	if(event.text.unicode == 8) // Delete key
 		m_text = m_text.substr(0, m_text.size() - 1);
 	else if(m_text.size() < m_size)
-		m_text += static_cast<char>(event.text.unicode);
+		if((event.text.unicode >= 48) && (event.text.unicode <= 57))
+			m_text += static_cast<char>(event.text.unicode);
 
+	m_body_text.setString(m_text);
 }
 
 //----------------------------MenuTextInputButton----------------------------
@@ -179,17 +181,30 @@ void MenuTextInputButton::scaleText()
 	Vector2f position = m_bounding_rec.getPosition();
 	m_text.setPosition(position);
 
-	float text_offset = (m_bounding_rec.getGlobalBounds().width -  m_text.getGlobalBounds().width) / 2.f;
-	m_text.move(Vector2f(text_offset, 0));
+	float text_width = m_text.getGlobalBounds().width;
 
-	float text_height = m_text.getGlobalBounds().height;
+	// fprintf(stderr, "text widt/width = %f/%f = %f\n", m_bounding_rec.getGlobalBounds().width, text_width, m_bounding_rec.getGlobalBounds().width/text_width);
+	
+	float text_offset = (m_bounding_rec.getGlobalBounds().width -  text_width) / 2.f;
+	
+	float xScale = m_bounding_rec.getGlobalBounds().width / text_width;
+
+
+	if(text_offset > 0)
+		m_text.move(Vector2f(text_offset, 0));
+
+	if(xScale <= 1)
+		m_text.scale(xScale, 1);
+
+	float text_height = static_cast<float>(m_text.getCharacterSize());
 
 	Vector2f size = m_bounding_rec.getSize();
 
-	size.y -= text_height;
+
+	size.y -= text_height + 5;
 	
 	Vector2f box_position = position;
-	box_position.y  += text_height; 
+	box_position.y  += text_height + 5; 
 
 	m_body.setPosition(box_position);
 	m_body.setSize(size);
@@ -197,7 +212,38 @@ void MenuTextInputButton::scaleText()
 
 void MenuTextInputButton::render()
 {
-	m_body.draw(*m_target);
 	m_target->draw(m_bounding_rec);
+	m_body.draw(*m_target);
 	m_target->draw(m_text);
+}
+
+bool MenuTextInputButton::update(const sf::Event& event)
+{ 
+	Vector2f mouse_pos = sf::Mouse::getPosition(*m_target);
+
+	if(m_body.contains(mouse_pos))
+	{
+		if(	(event.type == sf::Event::MouseButtonPressed) &&
+			(event.mouseButton.button == sf::Mouse::Left))
+		{
+			m_body.setFocus(true);
+			return true;
+		}
+	}
+	
+	if(	m_body.hasFocus() &&
+		(event.type == sf::Event::KeyPressed) &&
+		(event.key.code == sf::Keyboard::Escape))
+	{
+		m_body.setFocus(false);
+		return true;
+	}
+
+	if(m_body.hasFocus())
+	{
+		m_body.handleInput(event);
+		return true;
+	}
+
+	return false;
 }
