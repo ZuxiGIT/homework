@@ -47,8 +47,11 @@ bool MenuEllipseButton::update(const sf::Event& event)
 	
 	if(	(event.type == sf::Event::MouseButtonPressed) && 
 	(event.mouseButton.button == sf::Mouse::Left))
+	{
 		m_body.setFillColor(!RGB(m_background_color));
-	
+		return true;
+	}
+
 	if(	(event.type == sf::Event::MouseButtonReleased) && 
 		(event.mouseButton.button == sf::Mouse::Left))
 	{
@@ -127,7 +130,10 @@ bool MenuRectangleButton::update(const sf::Event& event)
 	
 	if(	(event.type == sf::Event::MouseButtonPressed) && 
 	(event.mouseButton.button == sf::Mouse::Left))
+	{
 		m_body.setFillColor(!RGB(m_background_color));
+		return true;
+	}
 	
 	if(	(event.type == sf::Event::MouseButtonReleased) && 
 		(event.mouseButton.button == sf::Mouse::Left))

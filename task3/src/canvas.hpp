@@ -31,6 +31,7 @@ class Canvas : public NonCopyable
 
 	void renderer();
 public:
+	sf::Thread m_thread;
 	explicit Canvas(unsigned int width, unsigned int height, float xLTop = 0, float yLTop = 0);
 
 	void setPixel(unsigned int x, unsigned int y, RGB pixel);

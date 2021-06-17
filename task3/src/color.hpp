@@ -99,7 +99,9 @@ struct RGB
     RGB& operator=(const RGB&& obj) {  r = obj.r; g = obj.g; b = obj.b; return *this; }
 
 
-    RGB operator!() { return RGB(255 - r, 255 - g, 255 - b); }
+    RGB operator!() { return RGB(   static_cast<BYTE>(255 - r), 
+                                    static_cast<BYTE>(255 - g),
+                                    static_cast<BYTE>(255 - b)); }
 
     RGB operator+(const RGB& obj)  { return RGB(    static_cast<BYTE>(r + obj.r),       // r + obj.r > 1 ? 1 : r + obj.r 
                                                     static_cast<BYTE>(g + obj.g),       // g + obj.g > 1 ? 1 : g + obj.g

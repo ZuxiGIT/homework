@@ -17,12 +17,57 @@
 #include "functors.hpp"
 //#include <GLM/glm.hpp>
 #include <SFML/OpenGL.hpp>
-
+#include <SFML/System/Thread.hpp>
 
 // TODO 
 // remove setPosition / getPosition and so on methods and add sf::Transformable inheritance
-// improve text scaling
-// improve TextField
+// improve text scaling ----- done
+// improve TextField    ----- done
+
+sf::Mutex rendering_mutex;
+bool SHOULD_CLOSE = false;
+
+
+class renderingThread
+{
+    sf::RenderWindow& window;
+    Canvas& canvas;
+    ButtonManager& buttons;
+
+public:
+    renderingThread(sf::RenderWindow* win, Canvas* can, ButtonManager* btns)
+    :
+    window(*win),
+    canvas(*can),
+    buttons(*btns)
+    {}
+
+    void operator() ()
+    {
+
+        fprintf(stderr, "RENDERING THREAD:: Started\n");
+
+        window.setActive(true);
+
+        sf::Clock Clock;
+
+        while (!SHOULD_CLOSE)
+        {
+            float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
+            Clock.restart();
+
+            fprintf(stderr, "Framrate: %lf\r", Framerate);
+
+            window.clear(Color(0.2f, 0.3f, 0.3f));
+            canvas.draw(window);
+            buttons.render();
+            window.display();
+        }
+
+        window.setActive(false);
+    }
+
+};
 
 int main()
 {
@@ -48,8 +93,10 @@ int main()
     
     
     sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!", sf::Style::Default, settings);
+    
     window.setFramerateLimit(60);
     window.setMouseCursorVisible(true);
+
     bool mouse_hidden = false;
 
     Canvas canvas {800, 800, 10, 10};
@@ -91,18 +138,19 @@ int main()
 
     canvas.setObjects(objects);
     canvas.setLights(lights);
+    canvas.m_thread.launch();
+
+    sf::Event event;
+
+    renderingThread rendering_thread {&window, &canvas, &buttons};
+    window.setActive(false); 
     
-    sf::Clock Clock;
+    sf::Thread th {rendering_thread};
+    th.launch();
+    fprintf(stderr, "MAIN THREAD:: rendering thread started\n");
 
-    while (window.isOpen())
+    while(window.isOpen())
     {
-        float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
-        Clock.restart();
-
-        fprintf(stderr, "Framrate: %lf\r", Framerate);
-
-        sf::Event event;
-
         while (window.pollEvent(event))
         {
             if (mouse_hidden && (event.type == sf::Event::MouseMoved))
@@ -111,15 +159,16 @@ int main()
                 {
                     float mx = static_cast<float>(event.mouseMove.x) / 1080.f - 0.5f;
                     float my = static_cast<float>(event.mouseMove.y) / 1080.f - 0.5f;
-                    
+
                     fprintf(stderr, "---mouse moved (%d, %d)\n", event.mouseMove.x, event.mouseMove.y);
                     fprintf(stderr, "mouse moved (%f, %f)\n", mx, my);
-                    
+
                     camera.rotate(mx, my);
                     sf::Mouse::setPosition(sf::Vector2i(540, 540), window);
                 }
                 continue;
             }
+
             if (event.type == sf::Event::KeyPressed)
             {
                 if(event.key.code == sf::Keyboard::Escape && mouse_hidden)
@@ -133,11 +182,12 @@ int main()
             Vector2f mouse_pos = sf::Mouse::getPosition(window);
 
             fprintf(stderr,"-----mouse position(%f, %f)\n", mouse_pos.x, mouse_pos.y);
-            
+
             if(buttons.update(event))
                 continue;
+
             if((event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Button::Left))
-                if(canvas.isInCanvas(mouse_pos))
+                if(canvas.isInCanvas(mouse_pos) && !mouse_hidden)
                     {
                         window.setMouseCursorVisible(false);
                         mouse_hidden = true;
@@ -149,17 +199,22 @@ int main()
                     (event.key.code == sf::Keyboard::Escape) && 
                         !mouse_hidden))
             {
+                fprintf(stderr, "before closing\n");
+                
+                rendering_mutex.lock();
+                SHOULD_CLOSE = true;
+                rendering_mutex.unlock();
+                
+                th.wait();
+                
+                window.setActive(true);
                 window.close();
+                
+                fprintf(stderr, "after closing\n");
+
                 continue;
             }
         }
-
-        
-        window.clear(Color(0.2f, 0.3f, 0.3f));
-        // canvas.draw(window);
-        buttons.render();
-        window.display();
-    } 
-
+    }
     return 0;
 }
