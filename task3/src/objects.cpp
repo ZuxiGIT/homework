@@ -6,14 +6,23 @@
 #include "functions.inl"
 #include <stdio.h>
 #include <cmath>
+#include <assert.h>
 
 
-
+std::string operator+(const Drawable::Type& type)
+{
+    switch(type)
+    {
+        case (Drawable::Type::SPHERE): return "sphere";
+        case (Drawable::Type::PLANE): return "plane";
+        default: return "";
+    }
+}
 
 
 Sphere::Sphere(sf::Vector3f center, float radius, Material properties, sf::Color color)
-: 
-Drawable(center, color, properties),
+:
+Drawable(center, color, properties, Type::SPHERE),
 m_radius(radius)
 {}
 
@@ -53,7 +62,7 @@ sf::Vector3f Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3
 
 Plane::Plane(sf::Vector3f plane_point, sf::Vector3f plane_normal, Material properties, sf::Color color)
 :
-Drawable(plane_point, color, properties),
+Drawable(plane_point, color, properties, Type::PLANE),
 m_plane_normal(plane_normal)
 {}
 
@@ -80,15 +89,26 @@ sf::Vector3f Plane::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f
     return sf::Vector3f(1, t, t);
 }
 
+void ObjectManager::remove(size_t index)
+{
+    assert(index < size());
+
+    delete m_objects[index];
+
+    for(int i = index; i < size() - 1; i ++)
+        m_objects[i] = m_objects[i+1];
+    
+    m_objects.pop_back();
+}
+
 void ObjectManager::add(Drawable* obj)
 {
-    m_count++;
     m_objects.push_back(obj);
 }
 
 ObjectManager::~ObjectManager()
 {
-    for(size_t i = 0; i < m_count; i++)
+    for(size_t i = 0; i < m_objects.size(); i++)
         delete m_objects[i];
 }
 
@@ -104,12 +124,11 @@ m_intensity(intensity)
 
 LightManager::~LightManager()
 {
-    for(size_t i = 0; i < m_count; i ++)
+    for(size_t i = 0; i < m_lights.size(); i ++)
         delete m_lights[i];
 }
 
 void LightManager::add(Light* obj)
 {
-    m_count++;
     m_lights.push_back(obj);
 }

@@ -1,19 +1,16 @@
 #pragma once
 #include <assert.h>
-#include "mymath.hpp"
-#include "color.hpp"
 #include <vector>
+#include <SFML/Window/Mouse.hpp>
+#include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
-#include <SFML/Window/Event.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include "mymath.hpp"
+#include "color.hpp"
 #include "sfmlExtend.hpp"
 #include "noncopyable.hpp"
 #include "functors.hpp"
-#include <SFML/Window/Mouse.hpp>
-
-
-
 
 
 class AbstractButton

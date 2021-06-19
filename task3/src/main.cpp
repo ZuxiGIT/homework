@@ -130,12 +130,11 @@ int main()
     menu.add(new GroupOfButtons{secondPage});
 
 
-    // AddSphereFunctor add_sphere {&objects};
-    // DeleteSphereFunctor delete_sphere 
+    AddObjectFunctor add_sphere {&objects, Drawable::Type::SPHERE};
+    DeleteObjectFunctor delete_sphere {&objects, Drawable::Type::SPHERE};
 
     TestFunctor test {&window, &objects, &lights};
 
-    float test_number = 10;
     SetValueFunctor<float> cam_dir_x {&camera.m_direction.x};
     SetValueFunctor<float> cam_dir_y {&camera.m_direction.y};
     SetValueFunctor<float> cam_dir_z {&camera.m_direction.z};
@@ -150,9 +149,9 @@ int main()
 
     
 
-    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "delete sphere",    &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
-    firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "add sphere",       &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
-    firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "secondPage",       &menu2,  HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
+    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "delete sphere",    &delete_sphere,          HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "add sphere",       &add_sphere,    HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
+    firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "secondPage",       &menu2,         HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
 
     secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "cam.dir.x", &cam_dir_x, RGB(255, 0, 255) });
@@ -247,5 +246,6 @@ int main()
             }
         }
     }
+
     return 0;
 }

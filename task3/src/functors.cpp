@@ -1,5 +1,33 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include "button.hpp"
 #include <algorithm>
+#include <assert.h>
+#include <SFML/System/Mutex.hpp>
+#include <ctime>
+#include <string.h>
+
+Drawable* generateObject(Drawable::Type type)
+{   
+    switch(type)
+    {
+        default:
+        case Drawable::Type::SPHERE:
+        {
+            std::srand(std::time(nullptr));
+
+            sf::Vector3f pos {std::rand() % 10, std::rand() % 10, std::rand() % 10 };
+            sf::Color col {std::rand() % 255, std::rand() % 255, std::rand() % 255 };
+            Material prop = {500, 0.9f};
+            
+            return new Sphere{pos, 1, prop, col};
+        }
+    }
+}
+
+extern sf::Mutex rendering_mutex;
 
 MenuSwitcherFunctor::MenuSwitcherFunctor(MenuHandler* menu_handler, int* pages, unsigned int num)
 :
@@ -24,3 +52,39 @@ void MenuSwitcherFunctor::operator()(void* const arg)
     
 }
 
+
+void AddObjectFunctor::operator()(void* const arg)
+{
+    fprintf(stderr, "adding object %s!\n", (+m_type).c_str());
+    
+    if((m_objects == nullptr))
+        return;
+
+    rendering_mutex.lock();
+    
+    Drawable* object = generateObject(m_type);
+    m_objects->add(object);
+    
+    rendering_mutex.unlock();
+
+}
+
+void DeleteObjectFunctor::operator()(void* const arg)
+{
+    if((m_objects == nullptr))
+        return;
+ 
+    for(int i = m_objects->size() - 1; i >= 0; i--)
+    {
+        fprintf(stderr, "Object %s number %d\n", (+m_type).c_str(), i);
+ 
+        if((*m_objects)[i].getType() == m_type)
+        {
+            fprintf(stderr, "found! number %d\n", i);
+            m_objects->remove(i);
+            return;
+        }
+    }
+    fprintf(stderr, "not found!\n");
+    return;
+}

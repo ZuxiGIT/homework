@@ -65,7 +65,7 @@ public:
 	{}
 
 	SetValueFunctor(const SetValueFunctor&& functor) { m_value = functor.m_value; }
-	SetValueFunctor& operator= (const SetValueFunctor&& functor) { m_value = functor.m_value; }
+	SetValueFunctor& operator= (const SetValueFunctor&& functor) { m_value = functor.m_value; return *this; }
 	
 	SetValueFunctor(const SetValueFunctor& functor) = delete;
 	SetValueFunctor& operator=(const SetValueFunctor& functor) = delete;
@@ -97,15 +97,44 @@ public:
 };
 
 
-
-class AddSphereFunctor : public AbstractFunctor
+class AddObjectFunctor : public AbstractFunctor
 {
+
+protected:
+	
 	ObjectManager* m_objects = nullptr;
+	Drawable::Type m_type;
+
 public:
-	AddSphereFunctor(ObjectManager* obj)
+	AddObjectFunctor(ObjectManager* obj, Drawable::Type type)
 	:
-	m_objects(obj)
+	m_objects(obj),
+	m_type(type)
 	{}
+
+	AddObjectFunctor(const AddObjectFunctor&) = delete;
+	AddObjectFunctor& operator=(const AddObjectFunctor&) = delete;
+
+	virtual void operator() (void* const arg = NULL) override;
+};
+
+class DeleteObjectFunctor : public AbstractFunctor
+{
+
+protected:
+	
+	ObjectManager* m_objects = nullptr;
+	Drawable::Type m_type;
+
+public:
+	DeleteObjectFunctor(ObjectManager* obj, Drawable::Type type)
+	:
+	m_objects(obj),
+	m_type(type)
+	{}
+
+	DeleteObjectFunctor(const DeleteObjectFunctor&) = delete;
+	DeleteObjectFunctor& operator=(const DeleteObjectFunctor&) = delete;
 
 	virtual void operator() (void* const arg = NULL) override;
 };
