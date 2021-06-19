@@ -21,8 +21,6 @@
 
 // TODO 
 // remove setPosition / getPosition and so on methods and add sf::Transformable inheritance
-// improve text scaling ----- done
-// improve TextField    ----- done
 
 sf::Mutex rendering_mutex;
 bool SHOULD_CLOSE = false;
@@ -32,14 +30,14 @@ class renderingThread
 {
     sf::RenderWindow& window;
     Canvas& canvas;
-    ButtonManager& buttons;
+    MenuHandler& menu;
 
 public:
-    renderingThread(sf::RenderWindow* win, Canvas* can, ButtonManager* btns)
+    renderingThread(sf::RenderWindow* win, Canvas* can, MenuHandler* mn)
     :
     window(*win),
     canvas(*can),
-    buttons(*btns)
+    menu(*mn)
     {}
 
     void operator() ()
@@ -49,18 +47,21 @@ public:
 
         window.setActive(true);
 
-        sf::Clock Clock;
+        // sf::Clock Clock;
 
         while (!SHOULD_CLOSE)
         {
-            float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
-            Clock.restart();
+            // float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
+            // Clock.restart();
 
-            fprintf(stderr, "Framrate: %lf\r", Framerate);
+            // fprintf(stderr, "Framrate: %lf\r", Framerate);
+            // rendering_mutex.lock();
+            // fprintf(stderr, "RENDERING THREAD::Visible is %d\n", menu.getVisible());
+            // rendering_mutex.unlock();
 
             window.clear(Color(0.2f, 0.3f, 0.3f));
             canvas.draw(window);
-            buttons.render();
+            menu.render();
             window.display();
         }
 
@@ -119,30 +120,55 @@ int main()
     lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(-2, 0, 0)});
     lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, -4)});
 
-    TestFunctor test {&window, &objects, &lights};
+
     
+    MenuHandler menu {};
+    ButtonManager firstPage {};
+    ButtonManager secondPage {};
+
+    menu.add(new GroupOfButtons{firstPage});
+    menu.add(new GroupOfButtons{secondPage});
+
+
+    // AddSphereFunctor add_sphere {&objects};
+    // DeleteSphereFunctor delete_sphere 
+
+    TestFunctor test {&window, &objects, &lights};
+
     float test_number = 10;
-    SetValueFunctor<float> test2 {&test_number};
-    SetValueFunctor<float> test3 {&test_number};
-    SetValueFunctor<float> test4 {&test_number};
+    SetValueFunctor<float> cam_dir_x {&camera.m_direction.x};
+    SetValueFunctor<float> cam_dir_y {&camera.m_direction.y};
+    SetValueFunctor<float> cam_dir_z {&camera.m_direction.z};
+
+    int m1 = 0;
+    int m2 = 1;
+    MenuSwitcherFunctor menu1 (&menu, &m1, 1);
+    MenuSwitcherFunctor menu2 (&menu, &m2, 1);
 
     MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
-    ButtonManager& buttons = ButtonManager::createManager();
+    menu[1].m_visible = true;
+
+    
+
+    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "delete sphere",    &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "add sphere",       &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
+    firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "secondPage",       &menu2,  HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
 
-    buttons.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "test",         &test,   HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
-    buttons.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "test2",        &test,   HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
-    buttons.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "test)number", &test2, RGB(255, 0, 255) });
-    buttons.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "test)number", &test3, RGB(255, 0, 255) });
-    buttons.add(new MenuTextInputButton {&window, Vector2f(500, 700), Vector2f(200,100),  "test)number", &test4, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "cam.dir.x", &cam_dir_x, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "cam.dir.y", &cam_dir_y, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 700), Vector2f(200,100),  "cam.dir.z", &cam_dir_z, RGB(255, 0, 255) });
+    secondPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "firstPage", &menu1,  HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
+
+    
     canvas.setObjects(objects);
     canvas.setLights(lights);
     canvas.m_thread.launch();
 
     sf::Event event;
 
-    renderingThread rendering_thread {&window, &canvas, &buttons};
+    renderingThread rendering_thread {&window, &canvas, &menu};
     window.setActive(false); 
     
     sf::Thread th {rendering_thread};
@@ -151,8 +177,13 @@ int main()
 
     while(window.isOpen())
     {
+
         while (window.pollEvent(event))
         {
+            // rendering_mutex.lock();
+            // fprintf(stderr, "MAIN THREAD::Visible is %d\n", menu.getVisible());
+            // rendering_mutex.unlock();
+            
             if (mouse_hidden && (event.type == sf::Event::MouseMoved))
             {
                 if(!(static_cast<float>(event.mouseMove.x) < _EPS) && !(static_cast<float>(event.mouseMove.y) < _EPS))
@@ -183,7 +214,7 @@ int main()
 
             fprintf(stderr,"-----mouse position(%f, %f)\n", mouse_pos.x, mouse_pos.y);
 
-            if(buttons.update(event))
+            if(menu.update(event))
                 continue;
 
             if((event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Button::Left))
@@ -199,7 +230,7 @@ int main()
                     (event.key.code == sf::Keyboard::Escape) && 
                         !mouse_hidden))
             {
-                fprintf(stderr, "before closing\n");
+                // fprintf(stderr, "before closing\n");
                 
                 rendering_mutex.lock();
                 SHOULD_CLOSE = true;
@@ -210,7 +241,7 @@ int main()
                 window.setActive(true);
                 window.close();
                 
-                fprintf(stderr, "after closing\n");
+                // fprintf(stderr, "after closing\n");
 
                 continue;
             }

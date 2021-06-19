@@ -158,13 +158,10 @@ class ButtonManager
 {
 	size_t m_count = 0;
 	std::vector<AbstractButton*> m_buttons = {};
-
-	ButtonManager() = default;
-	~ButtonManager();
-
 public:
-	static ButtonManager& createManager()
-	{ static ButtonManager instance; return instance; }
+	ButtonManager() = default;
+	
+	~ButtonManager();
 
 	ButtonManager(ButtonManager&) = delete;
 	ButtonManager& operator=(const ButtonManager&) = delete;
@@ -333,4 +330,63 @@ public:
 	virtual void scaleText() override;
 	virtual void render() override;
 	virtual bool update(const sf::Event& event) override ;
+};
+
+
+struct GroupOfButtons
+{
+	ButtonManager* m_buttons = nullptr;
+ 	bool m_visible = false;
+
+	GroupOfButtons(ButtonManager& buttons) { m_buttons = &buttons; }
+};
+
+class MenuHandler
+{
+	std::vector<GroupOfButtons*> m_groups_of_buttons = {};
+
+public:
+	MenuHandler() {}
+
+	void add(GroupOfButtons* GoB) { m_groups_of_buttons.push_back(GoB); }
+	
+	GroupOfButtons& operator[] (size_t index) const { return *(m_groups_of_buttons[index]); }
+	
+	size_t getSize()
+	{
+		return m_groups_of_buttons.size();
+	}
+
+	int getVisible()
+	{
+		for( unsigned int i = 0; i < m_groups_of_buttons.size(); i ++)
+			if(m_groups_of_buttons[i]->m_visible)
+				return i;
+	}
+
+	void setVisible(size_t index, bool flag)
+	{
+		m_groups_of_buttons[index]->m_visible = flag;
+	}
+
+	bool update(const sf::Event& event) 
+	{
+		for( unsigned int i = 0; i < m_groups_of_buttons.size(); i ++)
+			if(m_groups_of_buttons[i]->m_visible)
+				return m_groups_of_buttons[i]->m_buttons->update(event);
+		return false;
+	}
+
+	void render()
+	{
+		for( unsigned int i = 0; i < m_groups_of_buttons.size(); i ++)
+			if(m_groups_of_buttons[i]->m_visible)
+				m_groups_of_buttons[i]->m_buttons->render();
+	}
+
+	~MenuHandler()
+	{
+		for( unsigned int i = 0; i < m_groups_of_buttons.size(); i ++)
+			delete m_groups_of_buttons[i];
+	} 
 };

@@ -70,13 +70,8 @@ void MenuEllipseButton::scaleText()
 	Vector2f position = m_body.getPosition();
 
 
-	double glyph_height = m_text.getCharacterSize();
-	double glyph_width 	= m_text.getCharacterSize() / 2;
-
-	const char* str 			= m_text.getString().toAnsiString().c_str();
-	size_t num_of_glyphs 		= 0;
-	
-	while(*str++)	num_of_glyphs++; 
+	double text_height 	= m_text.getCharacterSize();
+	double text_width	= m_text.getGlobalBounds().width;
 
 	double y = m_text.getCharacterSize() / 2;
 	double x = sqrt(1 -  y * y / radisuses.y / radisuses.y ) * radisuses.x;
@@ -87,17 +82,14 @@ void MenuEllipseButton::scaleText()
 	// fprintf(stderr, "ellipse: right size (%lf, %lf)\n", right_width, right_height);
 	// fprintf(stderr, "ellipse: glyph str size (%lf, %lf\n", num_of_glyphs * glyph_width, glyph_height);
 
-	double Xscale =  right_width 	/ (num_of_glyphs * glyph_width);
-	double Yscale =	 right_height 	/ (glyph_height);
+	double Xscale =  right_width 	/ (text_width);
+	double Yscale =	 right_height 	/ (text_height);
 
 	Xscale = Xscale > 1 ? 1 : Xscale; 
 	Yscale = Yscale > 1 ? 1 : Yscale;
 	
-	double Xoffset = (size.x - Xscale * (num_of_glyphs * glyph_width)) / 2;
-	double Yoffset = (size.y - Yscale * glyph_height) / 2;
-
-	Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset??? 
-	Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
+	double Xoffset = (text_width < size.x) 	? ((size.x - text_width) / 2) : 0;
+	double Yoffset = (text_height < size.y) ? ((size.y - text_height) / 2) : 0;
 
 	// fprintf(stderr, "ellipse: scale parametres (%lf, %lf)\nellipse: offset parametres (%lf, %lf)\n", Xscale, Yscale, Xoffset, Yoffset);
 	m_text.setPosition(static_cast<float>(position.x + Xoffset), static_cast<float>(position.y + Yoffset));
@@ -134,7 +126,7 @@ bool MenuRectangleButton::update(const sf::Event& event)
 		m_body.setFillColor(!RGB(m_background_color));
 		return true;
 	}
-	
+
 	if(	(event.type == sf::Event::MouseButtonReleased) && 
 		(event.mouseButton.button == sf::Mouse::Left))
 	{
@@ -151,25 +143,18 @@ void MenuRectangleButton::scaleText()
 	Vector2f size = m_body.getSize();
 	Vector2f position = m_body.getPosition();
 
-	double glyph_height 	= m_text.getCharacterSize();
-	double glyph_width 		= m_text.getCharacterSize() / 2;
-
-	const char* str 			= m_text.getString().toAnsiString().c_str();
-	size_t num_of_glyphs 		= 0;
+	double text_height 	= m_text.getCharacterSize();
+	double text_width 	= m_text.getGlobalBounds().width;
 	
-	while(*str++)	num_of_glyphs++; 
-	
-	double Xscale 				= (size.x - 4)	/ (num_of_glyphs * glyph_width);
-	double Yscale 				= (size.y )		/ (glyph_height);
+	double Xscale 		= (size.x)	/ (text_width);
+	double Yscale 		= (size.y)	/ (text_height);
 	
 	Xscale = Xscale > 1 ? 1 : Xscale; 
 	Yscale = Yscale > 1 ? 1 : Yscale;
 
-	double Xoffset = (size.x - num_of_glyphs * glyph_width) / 2;
-	double Yoffset = (size.y - glyph_height) / 2;
-
-	// Xoffset = Xoffset;// > 0 ? Xoffset : 0;    ---> negative offset???
-	// Yoffset = Yoffset;// > 0 ? Yoffset : 0;    ---> negative offset???
+	
+	double Xoffset = (text_width < size.x) 	? ((size.x - text_width) / 2) : 0;	
+	double Yoffset = (text_height < size.y) ? ((size.y - text_height) / 2) : 0;
 
 	// fprintf(stderr, "--------rectangle: offset parametres (%lf, %lf)\n", Xoffset, Yoffset);
 	// fflush(NULL);

@@ -33,8 +33,16 @@ void Canvas::setPixel(unsigned int x, unsigned int y, RGB pixel)
 void Canvas::renderer()
 {
     fprintf(stderr, "CANVAS::RENDERER()  canvas.m_thread started\n");
+    
+    // sf::Clock Clock;
+    
     while(!SHOULD_STOP)
     {
+        // float Framerate = 1.f / Clock.getElapsedTime().asSeconds();
+        // Clock.restart();
+
+        // fprintf(stderr, "Framrate (canvas renderer) : %lf\r", Framerate);
+
         for (size_t line = 0; line < m_height; line+=2)
             for(size_t column = 0; column < m_width; column+=2)
             {
