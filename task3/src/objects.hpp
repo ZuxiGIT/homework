@@ -4,13 +4,10 @@
 #include "noncopyable.hpp"
 #include "color.hpp"
 #include <vector>
+#include <string>
 
-const float _INFINITY = static_cast<float>(0xDEADBEEFDEADBEEF);
-const float _EPS = static_cast<float>(1e-3);
-
-
-
-
+extern const float _INFINITY;
+extern const float _EPS;
 
 struct Material
 {

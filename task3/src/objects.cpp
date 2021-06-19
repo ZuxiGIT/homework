@@ -9,6 +9,9 @@
 #include <assert.h>
 
 
+const float _INFINITY = static_cast<float>(0xDEADBEEFDEADBEEF);
+const float _EPS = static_cast<float>(1e-3);
+
 std::string operator+(const Drawable::Type& type)
 {
     switch(type)

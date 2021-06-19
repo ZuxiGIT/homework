@@ -9,6 +9,9 @@
 #include <ctime>
 #include <string.h>
 
+#include "objects.hpp"
+#include "button.hpp"
+
 Drawable* generateObject(Drawable::Type type)
 {   
     switch(type)

@@ -217,7 +217,7 @@ void TextField::handleInput(const sf::Event& event)
 	}
 	else if(m_text.size() < m_size)
 	{
-		if(	(event.text.unicode >= '0') && (event.text.unicode <= '9') )	
+		if(	(event.text.unicode >= '0') && (event.text.unicode <= '9') || (event.text.unicode == '.') )	
 			m_text += static_cast<char>(event.text.unicode);
 		else if(event.text.unicode == '-')
 			if(m_text.find('-') == std::string::npos)
@@ -292,6 +292,25 @@ bool MenuTextInputButton::update(const sf::Event& event)
 			return true;
 		}
 	}
+
+	// if(	(event.type == sf::Event::MouseButtonPressed) &&
+	// 		(event.mouseButton.button == sf::Mouse::Left))
+	// {
+	// 	if(m_body.contains(mouse_pos))
+	// 	{
+	// 		m_body.setFocus(true);
+	// 		return true;
+	// 	}
+	// 	else if(m_body.hasFocus())
+	// 	{
+	// 		m_body.setFocus(false);
+	// 		return true;
+	// 	}
+	// 	return false;
+
+	// }
+
+
 	
 	if(	m_body.hasFocus() &&
 		(event.type == sf::Event::KeyPressed) &&

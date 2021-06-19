@@ -30,3 +30,10 @@ inline sf::Vector3f normalize(const sf::Vector3f& obj)
     float len = length(obj);
     return sf::Vector3f(obj / len);
 }
+
+inline sf::Vector2f rot(double a)
+{
+    float s = static_cast<float>(sin(a));
+    float c = static_cast<float>(cos(a));
+    return sf::Vector2f(c, s);
+}

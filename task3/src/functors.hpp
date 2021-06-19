@@ -1,10 +1,13 @@
 #pragma once
 #include "objects.hpp"
+// #include "button.hpp"
 
 //???? why we need to write "AbstractFunctor() = default;" otherwise compile error
 //???? why also need to delete again  EnvFunctor(const EnvFunctor&) and EnvFunctor& operator=(const EnvFunctor&)
 
 class MenuHandler;
+// class ObjectManager;
+// class LightManager;
 
 
 class AbstractFunctor
@@ -80,7 +83,6 @@ public:
 
 };
 
-class MenuHandler;
 
 class MenuSwitcherFunctor final : public AbstractFunctor
 {

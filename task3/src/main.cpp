@@ -18,7 +18,8 @@
 //#include <GLM/glm.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/System/Thread.hpp>
-
+#include <utility>
+#include <memory>
 // TODO 
 // remove setPosition / getPosition and so on methods and add sf::Transformable inheritance
 
@@ -73,12 +74,11 @@ public:
 int main()
 {
     // std::cout << "sizeof(float) " << sizeof(float)<<" sizeof(double*) " << sizeof(double*) <<std::endl;  ---> sizeof(float) 4 sizeof(double*) 4 <-- WTF????
-    
-    
+
     // RGB test1(67, 113, 4);
     // HSL test2 = RGB2HSL(test1);
     // RGB test3 = HSL2RGB(HSL {});
-
+    std::shared_ptr<int> ptr (new int(42));
     // fprintf(stderr, "rgb (%u, %u, %u)\nhsl(%u, %u, %u)\nrgb (%u, %u, %u)\n", test1.r, test1.g, test1.b, test2.h, test2.s, test2.l, test3.r, test3.g, test3.b);
     sf::ContextSettings settings;
 
@@ -100,8 +100,10 @@ int main()
 
     bool mouse_hidden = false;
 
-    Canvas canvas {800, 800, 10, 10};
-    Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f,1.f));
+    Canvas canvas {800, 800, 0, 0};
+
+    Camera camera(sf::Vector3f(0.f, 0.f, 0.f), sf::Vector3f(0.f, 0.f, 1.f));
+    
     canvas.setCamera(camera);
 
     ObjectManager& objects = ObjectManager::createManager();
@@ -138,6 +140,12 @@ int main()
     SetValueFunctor<float> cam_dir_x {&camera.m_direction.x};
     SetValueFunctor<float> cam_dir_y {&camera.m_direction.y};
     SetValueFunctor<float> cam_dir_z {&camera.m_direction.z};
+    SetValueFunctor<float> cam_left_x {&camera.m_camera_left.x};
+    SetValueFunctor<float> cam_left_y {&camera.m_camera_left.y};
+    SetValueFunctor<float> cam_left_z {&camera.m_camera_left.z};
+    SetValueFunctor<float> cam_up_x {&camera.m_camera_up.x};
+    SetValueFunctor<float> cam_up_y {&camera.m_camera_up.y};
+    SetValueFunctor<float> cam_up_z {&camera.m_camera_up.z};
 
     int m1 = 0;
     int m2 = 1;
@@ -149,7 +157,7 @@ int main()
 
     
 
-    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "delete sphere",    &delete_sphere,          HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "delete sphere",    &delete_sphere, HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
     firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "add sphere",       &add_sphere,    HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
     firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "secondPage",       &menu2,         HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
@@ -157,6 +165,14 @@ int main()
     secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "cam.dir.x", &cam_dir_x, RGB(255, 0, 255) });
     secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "cam.dir.y", &cam_dir_y, RGB(255, 0, 255) });
     secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 700), Vector2f(200,100),  "cam.dir.z", &cam_dir_z, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 800), Vector2f(200,100),  "cam.left.x", &cam_left_x, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 800), Vector2f(200,100),  "cam.left.y", &cam_left_y, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 800), Vector2f(200,100),  "cam.left.z", &cam_left_z, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 900), Vector2f(200,100),  "cam.up.x", &cam_up_x, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 900), Vector2f(200,100),  "cam.up.y", &cam_up_y, RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 900), Vector2f(200,100),  "cam.up.z", &cam_up_z, RGB(255, 0, 255) });
+
+
     secondPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "firstPage", &menu1,  HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
 
@@ -172,7 +188,7 @@ int main()
     
     sf::Thread th {rendering_thread};
     th.launch();
-    fprintf(stderr, "MAIN THREAD:: rendering thread started\n");
+    fprintf(stderr, "MAIN THREAD:: main thread started\n");
 
     while(window.isOpen())
     {
@@ -185,17 +201,18 @@ int main()
             
             if (mouse_hidden && (event.type == sf::Event::MouseMoved))
             {
-                if(!(static_cast<float>(event.mouseMove.x) < _EPS) && !(static_cast<float>(event.mouseMove.y) < _EPS))
-                {
-                    float mx = static_cast<float>(event.mouseMove.x) / 1080.f - 0.5f;
-                    float my = static_cast<float>(event.mouseMove.y) / 1080.f - 0.5f;
+                double mx = static_cast<double>(event.mouseMove.x - 400.f) / 800.f * M_PI;
+                double my = static_cast<double>(event.mouseMove.y - 400.f) / 800.f * M_PI;
 
-                    fprintf(stderr, "---mouse moved (%d, %d)\n", event.mouseMove.x, event.mouseMove.y);
-                    fprintf(stderr, "mouse moved (%f, %f)\n", mx, my);
+                // fprintf(stderr, "---mouse moved (%d, %d)\n", event.mouseMove.x, event.mouseMove.y);
+                // fprintf(stderr, "mouse moved (%f, %f)\n", mx, my);
+                fprintf(stderr, "x_angle is %lf deg\n", mx * 180 / M_PI);
+                fprintf(stderr, "y_angle is %lf deg\n", my * 180 / M_PI);
 
-                    camera.rotate(mx, my);
-                    sf::Mouse::setPosition(sf::Vector2i(540, 540), window);
-                }
+
+                camera.rotate(mx, my);
+                sf::Mouse::setPosition(sf::Vector2i(400, 400), window);
+                
                 continue;
             }
 
@@ -219,7 +236,7 @@ int main()
             if((event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Button::Left))
                 if(canvas.isInCanvas(mouse_pos) && !mouse_hidden)
                     {
-                        window.setMouseCursorVisible(false);
+                        //window.setMouseCursorVisible(false);
                         mouse_hidden = true;
                         continue;
                     }
