@@ -39,13 +39,17 @@ Color Raytrace::ray_cast(Ray& ray, float t_min, float t_max, const ObjectManager
 
     sf::Vector3f point = ray.getPoint(min_dist);            // point intersection
     sf::Vector3f normal = closest_obj->getNormal(point);    // normal at point intersection
+    
+    if(dot(normalize(normal), normalize(ray.m_origin - point)) < 0)
+        normal = -normal;
 
     normal = normalize(normal);
     
     //local color
     ray.m_origin = point;
     ray.m_direction = -ray.m_direction;
-    Color local_color = closest_obj->getColor() * ComputeLighting(ray, normal, closest_obj->m_properties, objects, lights);
+    Color local_color = closest_obj->getColor() * ComputeLighting(ray, normal, closest_obj->m_properties, objects, lights); 
+
 
     //reflection
     float r = closest_obj->m_properties.reflective;

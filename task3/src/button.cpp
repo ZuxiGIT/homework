@@ -217,7 +217,7 @@ void TextField::handleInput(const sf::Event& event)
 	}
 	else if(m_text.size() < m_size)
 	{
-		if(	(event.text.unicode >= '0') && (event.text.unicode <= '9') || (event.text.unicode == '.') )	
+		if((event.text.unicode >= '0') && (event.text.unicode <= '9') || (event.text.unicode == '.'))	
 			m_text += static_cast<char>(event.text.unicode);
 		else if(event.text.unicode == '-')
 			if(m_text.find('-') == std::string::npos)

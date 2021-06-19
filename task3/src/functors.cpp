@@ -12,20 +12,18 @@
 #include "objects.hpp"
 #include "button.hpp"
 
-Drawable* generateObject(Drawable::Type type)
+inline Drawable* generateObject(Drawable::Type type)
 {   
     switch(type)
     {
         default:
+        case Drawable::Type::PLANE:
+        {
+            return Plane::generate();
+        }        
         case Drawable::Type::SPHERE:
         {
-            std::srand(std::time(nullptr));
-
-            sf::Vector3f pos {std::rand() % 10, std::rand() % 10, std::rand() % 10 };
-            sf::Color col {std::rand() % 255, std::rand() % 255, std::rand() % 255 };
-            Material prop = {500, 0.9f};
-            
-            return new Sphere{pos, 1, prop, col};
+            return Sphere::generate();
         }
     }
 }
@@ -52,7 +50,6 @@ void MenuSwitcherFunctor::operator()(void* const arg)
         fprintf(stderr, "setting %d group_menu visible\n", m_pages[i]);
         m_menu->setVisible(m_pages[i], true);
     }
-    
 }
 
 

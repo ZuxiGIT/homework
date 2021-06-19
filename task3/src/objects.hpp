@@ -5,6 +5,8 @@
 #include "color.hpp"
 #include <vector>
 #include <string>
+#include <ctime>
+
 
 extern const float _INFINITY;
 extern const float _EPS;
@@ -58,13 +60,24 @@ class Sphere : public Drawable
 
 
 public:
-
     explicit Sphere(sf::Vector3f position, float radius, Material properties, sf::Color color = sf::Color::Green);
     Sphere() = default;
 
     virtual sf::Vector3f ray_intersect (const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
     virtual sf::Vector3f getNormal(const sf::Vector3f& point) const override { return point - m_position;}
     virtual ~Sphere() override {}
+    
+
+    static Sphere* generate()
+    {
+        std::srand(std::time(nullptr));
+
+        sf::Vector3f pos {std::rand() % 10, std::rand() % 10, std::rand() % 10 };
+        sf::Color col {std::rand() % 255, std::rand() % 255, std::rand() % 255 };
+        Material prop = {500, 0.9f};
+        
+        return new Sphere{pos, 1, prop, col};
+    }
 };
 
 
@@ -78,6 +91,18 @@ public:
     virtual sf::Vector3f ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
     virtual sf::Vector3f getNormal(const sf::Vector3f&) const override { return m_plane_normal; }
     virtual ~Plane() override {}
+
+    static Plane* generate()
+    {
+        std::srand(std::time(nullptr));
+
+        sf::Vector3f pos {0, 0, 50};
+        sf::Vector3f normal {std::rand() % 10, 0, std::rand() % 10 };
+        Material prop = {1, 0};
+        sf::Color col {std::rand() % 255, std::rand() % 255, std::rand() % 255 };
+        fprintf(stderr, "color (%d, %d, %d)\n", col.r, col.g, col.b);
+        return new Plane {pos, normal, prop, col};
+    }
 };
 
 class ObjectManager

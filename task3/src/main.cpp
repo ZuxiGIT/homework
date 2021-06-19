@@ -117,10 +117,11 @@ int main()
     objects.add(new Plane  {sf::Vector3f(0, -2, 0), sf::Vector3f(0, 1, 0), {1, 0}, sf::Color::Yellow} );
     // objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
 
-    lights.add(new Light {Light::Type::AMBIENT, 0.2f});
-    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(2, 10, 0)});
+    // lights.add(new Light {Light::Type::AMBIENT, 0.2f});
+    lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(0, 0, -10)});
     lights.add(new Light {Light::Type::POINT, 0.6f, sf::Vector3f(-2, 0, 0)});
-    lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, -4)});
+    // lights.add(new Light {Light::Type::DIRECTIONAL, 0.6f, sf::Vector3f(1, -4, -4)});
+    // lights.add(new Light {Light::Type::DIRECTIONAL, 1.f,  sf::Vector3f(1, 4, 4)});
 
 
     
@@ -133,7 +134,11 @@ int main()
 
 
     AddObjectFunctor add_sphere {&objects, Drawable::Type::SPHERE};
+    AddObjectFunctor add_plane {&objects, Drawable::Type::PLANE};
+
     DeleteObjectFunctor delete_sphere {&objects, Drawable::Type::SPHERE};
+    DeleteObjectFunctor delete_plane {&objects, Drawable::Type::PLANE};
+
 
     TestFunctor test {&window, &objects, &lights};
 
@@ -155,23 +160,22 @@ int main()
     MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
     menu[1].m_visible = true;
 
-    
+    firstPage.add(new MenuRectangleButton {&window, Vector2f{200, 800},     Vector2f{200, 300},     "add plane",           &add_plane,     HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuRectangleButton {&window, Vector2f{600, 800},     Vector2f{200, 300},     "delete plane",        &delete_plane,     HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},        Vector2f{200, 20},      "delete sphere",    &delete_sphere, HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800),     Vector2f(200, 300),     "add sphere",       &add_sphere,    HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
+    firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),       Vector2f(100, 100),     "secondPage",       &menu2,         HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
-    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},    Vector2f{200, 20},  "delete sphere",    &delete_sphere, HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
-    firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800), Vector2f(200, 300), "add sphere",       &add_sphere,    HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
-    firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "secondPage",       &menu2,         HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
-
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "cam.dir.x", &cam_dir_x, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "cam.dir.y", &cam_dir_y, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 700), Vector2f(200,100),  "cam.dir.z", &cam_dir_z, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 800), Vector2f(200,100),  "cam.left.x", &cam_left_x, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 800), Vector2f(200,100),  "cam.left.y", &cam_left_y, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 800), Vector2f(200,100),  "cam.left.z", &cam_left_z, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 900), Vector2f(200,100),  "cam.up.x", &cam_up_x, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 900), Vector2f(200,100),  "cam.up.y", &cam_up_y, RGB(255, 0, 255) });
-    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 900), Vector2f(200,100),  "cam.up.z", &cam_up_z, RGB(255, 0, 255) });
-
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 700), Vector2f(200,100),  "cam.dir.x",   &cam_dir_x,     RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 700), Vector2f(200,100),  "cam.dir.y",   &cam_dir_y,     RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 700), Vector2f(200,100),  "cam.dir.z",   &cam_dir_z,     RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 800), Vector2f(200,100),  "cam.left.x",  &cam_left_x,    RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 800), Vector2f(200,100),  "cam.left.y",  &cam_left_y,    RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 800), Vector2f(200,100),  "cam.left.z",  &cam_left_z,    RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(900, 900), Vector2f(200,100),  "cam.up.x",    &cam_up_x,      RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(700, 900), Vector2f(200,100),  "cam.up.y",    &cam_up_y,      RGB(255, 0, 255) });
+    secondPage.add(new MenuTextInputButton {&window, Vector2f(500, 900), Vector2f(200,100),  "cam.up.z",    &cam_up_z,      RGB(255, 0, 255) });
 
     secondPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),   Vector2f(100, 100), "firstPage", &menu1,  HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
