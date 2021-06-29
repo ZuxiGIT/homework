@@ -34,7 +34,7 @@ public:
 class ActionButton : public AbstractButton
 {
 protected:
-	AbstractFunctor* m_action;
+	AbstractFunctor* m_action = nullptr;
 
 public:
 	ActionButton(sf::RenderWindow* target, AbstractFunctor* action)
@@ -354,12 +354,12 @@ public:
 		return m_groups_of_buttons.size();
 	}
 
-	int getVisible()
-	{
-		for( unsigned int i = 0; i < m_groups_of_buttons.size(); i ++)
-			if(m_groups_of_buttons[i]->m_visible)
-				return i;
-	}
+	// int getVisible()
+	// {
+	// 	for( unsigned int i = 0; i < m_groups_of_buttons.size(); i ++)
+	// 		if(m_groups_of_buttons[i]->m_visible)
+	// 			return i;
+	// }
 
 	void setVisible(size_t index, bool flag)
 	{

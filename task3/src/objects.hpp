@@ -28,7 +28,7 @@ struct  Drawable : public NonCopyable
     Type m_type;
     sf::Vector3f m_position = {};
     Material m_properties = {};
-    Color m_color = {};
+    sf::Color m_color = {};
 
     Drawable(sf::Vector3f position, sf::Color color, Material properties, Type type)
     :
@@ -44,10 +44,10 @@ struct  Drawable : public NonCopyable
     Type  getType() { return m_type; };
     virtual sf::Vector3f ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const = 0;
     virtual sf::Vector3f getNormal(const sf::Vector3f& point) const = 0;
-    sf::Vector3f getColor() const  { return m_color; }
+    sf::Color getColor() const  { return m_color; }
     sf::Vector3f getPosition() const { return m_position; }
 
-    virtual ~Drawable() {}
+    virtual ~Drawable() { fprintf(stderr, "----> %s was called on %d line\n", __PRETTY_FUNCTION__, __LINE__); }
 
 };
 
@@ -58,14 +58,14 @@ class Sphere : public Drawable
 {
     float m_radius = 0;
 
-
 public:
     explicit Sphere(sf::Vector3f position, float radius, Material properties, sf::Color color = sf::Color::Green);
     Sphere() = default;
 
     virtual sf::Vector3f ray_intersect (const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
     virtual sf::Vector3f getNormal(const sf::Vector3f& point) const override { return point - m_position;}
-    virtual ~Sphere() override {}
+    
+    virtual ~Sphere() { fprintf(stderr, "----> %s was called on %d line\n", __PRETTY_FUNCTION__, __LINE__); }
     
 
     static Sphere* generate()
@@ -90,16 +90,17 @@ public:
 
     virtual sf::Vector3f ray_intersect(const sf::Vector3f& origin, const sf::Vector3f& direction) const override;
     virtual sf::Vector3f getNormal(const sf::Vector3f&) const override { return m_plane_normal; }
-    virtual ~Plane() override {}
+    
+    virtual ~Plane() { fprintf(stderr, "----> %s was called on %d line\n", __PRETTY_FUNCTION__, __LINE__); }
 
     static Plane* generate()
     {
-        std::srand(std::time(nullptr));
+        std::srand(static_cast<unsigned>(std::time(nullptr)));
 
         sf::Vector3f pos {0, 0, 50};
-        sf::Vector3f normal {std::rand() % 10, 0, std::rand() % 10 };
-        Material prop = {1, 0};
-        sf::Color col {std::rand() % 255, std::rand() % 255, std::rand() % 255 };
+        sf::Vector3f normal {static_cast<float>(std::rand() % 10), 0, static_cast<float>(std::rand() % 10)};
+        Material prop {1, 0};
+        sf::Color col {static_cast<unsigned char>(std::rand() % 255), static_cast<unsigned char>(std::rand() % 255), static_cast<unsigned char>(std::rand() % 255) };
         fprintf(stderr, "color (%d, %d, %d)\n", col.r, col.g, col.b);
         return new Plane {pos, normal, prop, col};
     }
@@ -120,7 +121,7 @@ public:
     ObjectManager& operator=(const ObjectManager&) = delete;
 
     void remove(size_t index);
-    unsigned int size() const { return m_objects.size(); }
+    size_t size() const { return m_objects.size(); }
     
     Drawable& operator[](size_t index) const { return *m_objects[index]; }
     //const Drawable& operator[] (size_t index) const  { return *m_objects[index]; }
@@ -159,7 +160,7 @@ class LightManager
     LightManager() = default;
     ~LightManager();
 
-    unsigned int size() const { return m_lights.size(); }
+    size_t size() const { return m_lights.size(); }
     void add(Light* obj);
 
     Light& operator[](int index) { return *m_lights[index]; }

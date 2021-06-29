@@ -2,11 +2,16 @@
 
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include "objects.hpp"
-#include "functions.inl"
 #include <stdio.h>
 #include <cmath>
 #include <assert.h>
+#include <SFML/System/Mutex.hpp>
+
+#include "objects.hpp"
+#include "functions.inl"
+
+extern sf::Mutex canvas_mutex;
+
 
 
 const float _INFINITY = static_cast<float>(0xDEADBEEFDEADBEEF);
@@ -42,8 +47,8 @@ sf::Vector3f Sphere::ray_intersect(const sf::Vector3f& origin, const sf::Vector3
     
     if(discr < 0) return sf::Vector3f(0, _INFINITY, _INFINITY);
     
-    float t1 = (-k2 + sqrtf(discr)) / ( 2 * k1);
-    float t2 = (-k2 - sqrtf(discr)) / ( 2 * k1);
+    float t1 = (-k2 + static_cast<float>(sqrt(discr))) / ( 2 * k1);
+    float t2 = (-k2 - static_cast<float>(sqrt(discr))) / ( 2 * k1);
     
     return sf::Vector3f(1, t1, t2);
 
@@ -95,23 +100,54 @@ sf::Vector3f Plane::ray_intersect(const sf::Vector3f& origin, const sf::Vector3f
 void ObjectManager::remove(size_t index)
 {
     assert(index < size());
+    
+    fprintf(stderr, "removing object number %zu (%s)\n", index, (+(m_objects[index]->getType())).c_str());
+    
+    for(size_t i = 0; i < m_objects.size(); i ++)
+        fprintf(stderr, "[%llu] (%p)\n", i, m_objects[i]);
+    
+    fprintf(stderr, "before delete m_objects[index] (%p)\n", m_objects[index]);
 
+    canvas_mutex.lock();
     delete m_objects[index];
 
-    for(int i = index; i < size() - 1; i ++)
+    fprintf(stderr, "after delete m_objects[index]\n");
+
+    for(size_t i = index; i < m_objects.size() - 1; i ++)
         m_objects[i] = m_objects[i+1];
     
+
+
+    fprintf(stderr, "removed object number %zu \n", index);
+
+    fprintf(stderr, "before pop_back() size is %llu\n", m_objects.size());
+
     m_objects.pop_back();
+
+    canvas_mutex.unlock();
+    fprintf(stderr, "after pop_back() size is %llu \n", m_objects.size());
+    
+    for(size_t i = 0; i < m_objects.size(); i ++)
+        fprintf(stderr, "[%llu] (%p)\n", i, m_objects[i]);
 }
+
 
 void ObjectManager::add(Drawable* obj)
 {
+    fprintf(stderr, "before push_back() size is %llu\n", m_objects.size());
+
+    canvas_mutex.lock();
+
     m_objects.push_back(obj);
+
+    canvas_mutex.unlock();
+
+    fprintf(stderr, "after push_back() size is %llu\n", m_objects.size());
 }
 
 ObjectManager::~ObjectManager()
 {
-    for(size_t i = 0; i < m_objects.size(); i++)
+    for(unsigned i = 0; i < m_objects.size(); i++)
         delete m_objects[i];
 }
 

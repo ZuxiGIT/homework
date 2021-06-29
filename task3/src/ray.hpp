@@ -21,7 +21,7 @@ struct Ray
     sf::Vector3f getPoint(float t) const { return m_origin + t * m_direction; } // ???????????????????????????????
     sf::Vector3f getPoint(float t) { return m_origin + t * m_direction; }
     
-    sf::Vector2f closestIntersection(float t_min, float t_max, const ObjectManager& objects) const;
+    sf::Vector2<double> closestIntersection(float t_min, float t_max, const ObjectManager& objects) const;
     
     explicit Ray(const sf::Vector3f& origin, const sf::Vector3f& direction);
 };

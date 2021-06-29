@@ -1,12 +1,16 @@
 // This is a personal academic project. Dear PVS-Studio, please check it.
 
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
-
 #include <stdio.h>
-#include <SFML/Graphics.hpp>
 #include <iostream>
+#include <memory>
+#include <utility>
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+#include <SFML/Graphics.hpp>
+#include <SFML/System/Thread.hpp>
+
 #include "ray.hpp"
 #include "raytrace.hpp"
 #include "canvas.hpp"
@@ -15,11 +19,8 @@
 #include "button.hpp"
 #include "functions.inl"
 #include "functors.hpp"
-//#include <GLM/glm.hpp>
-#include <SFML/OpenGL.hpp>
-#include <SFML/System/Thread.hpp>
-#include <utility>
-#include <memory>
+
+
 // TODO 
 // remove setPosition / getPosition and so on methods and add sf::Transformable inheritance
 
@@ -71,15 +72,12 @@ public:
 
 };
 
+Drawable* generateObject(Drawable::Type);
+
+
 int main()
 {
-    // std::cout << "sizeof(float) " << sizeof(float)<<" sizeof(double*) " << sizeof(double*) <<std::endl;  ---> sizeof(float) 4 sizeof(double*) 4 <-- WTF????
 
-    // RGB test1(67, 113, 4);
-    // HSL test2 = RGB2HSL(test1);
-    // RGB test3 = HSL2RGB(HSL {});
-    std::shared_ptr<int> ptr (new int(42));
-    // fprintf(stderr, "rgb (%u, %u, %u)\nhsl(%u, %u, %u)\nrgb (%u, %u, %u)\n", test1.r, test1.g, test1.b, test2.h, test2.s, test2.l, test3.r, test3.g, test3.b);
     sf::ContextSettings settings;
 
     settings.depthBits = 0;
@@ -87,11 +85,6 @@ int main()
     settings.stencilBits = 0;
     settings.majorVersion = 4;
     settings.minorVersion = 6;
-    // std::cout << "depth bits:" << settings.depthBits << std::endl;
-    // std::cout << "stencil bits:" << settings.stencilBits << std::endl;
-    // std::cout << "antialiasing level:" << settings.antialiasingLevel << std::endl;
-    // std::cout << "version:" << settings.majorVersion << "." << settings.minorVersion << std::endl;
-    
     
     sf::RenderWindow window(sf::VideoMode(1080, 1080), "SFML works!", sf::Style::Default, settings);
     
@@ -115,6 +108,9 @@ int main()
     objects.add(new Sphere {sf::Vector3f(2,  0, 4), 1, {500, 0.6f}, sf::Color::Blue} );
     objects.add(new Sphere {sf::Vector3f(-2, 0, 4), 1, {10, 0.1f}, sf::Color::Green} );
     objects.add(new Plane  {sf::Vector3f(0, -2, 0), sf::Vector3f(0, 1, 0), {1, 0}, sf::Color::Yellow} );
+    objects.remove(2);
+    objects.add(generateObject(Drawable::Type::PLANE));
+    
     // objects.add(new Sphere {sf::Vector3f(0, -5001, 0), 5000, {1000}, sf::Color::Yellow} );   
 
     // lights.add(new Light {Light::Type::AMBIENT, 0.2f});
@@ -160,9 +156,9 @@ int main()
     MenuButton::loadFont("TrueTypeFonts/UbuntuMono-R.ttf");
     menu[1].m_visible = true;
 
-    firstPage.add(new MenuRectangleButton {&window, Vector2f{200, 800},     Vector2f{200, 300},     "add plane",           &add_plane,     HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
-    firstPage.add(new MenuRectangleButton {&window, Vector2f{600, 800},     Vector2f{200, 300},     "delete plane",        &delete_plane,     HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
-    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},        Vector2f{200, 20},      "delete sphere",    &delete_sphere, HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)} );
+    firstPage.add(new MenuRectangleButton {&window, Vector2f{200, 800},     Vector2f{200, 300},     "add plane",        &add_plane,     HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)});
+    firstPage.add(new MenuRectangleButton {&window, Vector2f{600, 800},     Vector2f{200, 300},     "delete plane",     &delete_plane,  HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)});
+    firstPage.add(new MenuEllipseButton   {&window, Vector2f{0, 20},        Vector2f{200, 20},      "delete sphere",    &delete_sphere, HSL2RGB(HSL{164, 100, 50}),  RGB(0,0,0)});
     firstPage.add(new MenuRectangleButton {&window, Vector2f(400, 800),     Vector2f(200, 300),     "add sphere",       &add_sphere,    HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
     firstPage.add(new MenuRectangleButton {&window, Vector2f(900, 0),       Vector2f(100, 100),     "secondPage",       &menu2,         HSL2RGB(HSL{164 , 100, 50}), RGB(0,0,0)});
 
@@ -187,11 +183,12 @@ int main()
 
     sf::Event event;
 
-    renderingThread rendering_thread {&window, &canvas, &menu};
-    window.setActive(false); 
+    // renderingThread rendering_thread {&window, &canvas, &menu};
+    // window.setActive(false); 
     
-    sf::Thread th {rendering_thread};
-    th.launch();
+    // sf::Thread th {rendering_thread};
+    // th.launch();
+
     fprintf(stderr, "MAIN THREAD:: main thread started\n");
 
     while(window.isOpen())
@@ -205,8 +202,8 @@ int main()
             
             if (mouse_hidden && (event.type == sf::Event::MouseMoved))
             {
-                double mx = static_cast<double>(event.mouseMove.x - 400.f) / 800.f * M_PI;
-                double my = static_cast<double>(event.mouseMove.y - 400.f) / 800.f * M_PI;
+                double mx = static_cast<double>(static_cast<float>(event.mouseMove.x) - 400.f) / 800.f * M_PI;
+                double my = static_cast<double>(static_cast<float>(event.mouseMove.y) - 400.f) / 800.f * M_PI;
 
                 // fprintf(stderr, "---mouse moved (%d, %d)\n", event.mouseMove.x, event.mouseMove.y);
                 // fprintf(stderr, "mouse moved (%f, %f)\n", mx, my);
@@ -252,13 +249,14 @@ int main()
             {
                 // fprintf(stderr, "before closing\n");
                 
-                rendering_mutex.lock();
-                SHOULD_CLOSE = true;
-                rendering_mutex.unlock();
+                // rendering_mutex.lock();
+                // SHOULD_CLOSE = true;
+                // rendering_mutex.unlock();
                 
-                th.wait();
-                
-                window.setActive(true);
+                // th.wait();
+                // canvas.m_thread.wait();
+
+                // window.setActive(true);
                 window.close();
                 
                 // fprintf(stderr, "after closing\n");
@@ -266,6 +264,11 @@ int main()
                 continue;
             }
         }
+        
+        window.clear(Color(0.2f, 0.3f, 0.3f));
+        canvas.draw(window);
+        menu.render();
+        window.display();
     }
 
     return 0;

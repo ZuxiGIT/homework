@@ -41,7 +41,7 @@ namespace sf{
         {
             static const double PI = 3.14159265;
             
-            double angle = index * 2 * PI / getPointCount() - PI / 2;
+            double angle = static_cast<double>(index) * 2 * PI / static_cast<double>(getPointCount()) - PI / 2;
 
             float x = static_cast<float>(cos(angle) * static_cast<float>(m_radius.x));
             float y = static_cast<float>(sin(angle) * static_cast<float>(m_radius.y));

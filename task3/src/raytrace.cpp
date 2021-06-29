@@ -7,24 +7,27 @@
 #include "color.hpp"
 #include "ray.hpp"
 
+#include <SFML/System/Mutex.hpp>
+
 Color Raytrace::BACKGROUND =  {0.2f, 0.7f, 0.8f};
+
 #define _GET_RETURN_INTERSECT(_min_dist, _obj_pointer, _function_call) \
                                                                        \
-    sf::Vector2f _returned_vector = _function_call;                    \
+    sf::Vector2<double> _returned_vector = _function_call;             \
     _min_dist = _returned_vector.x;                                    \
     union                                                              \
     {                                                                  \
-        float fl;                                                      \
+        double dbl;                                                     \
         const Drawable *ptr;                                           \
     } _temp;                                                           \
-    _temp.fl = _returned_vector.y;                                     \
+    _temp.dbl = _returned_vector.y;                                    \
     _obj_pointer = _temp.ptr;
 
 
 Color Raytrace::ray_cast(Ray& ray, float t_min, float t_max, const ObjectManager &objects, const LightManager &lights)
 {
-    float min_dist = {};
-    const Drawable *closest_obj = NULL;
+    double min_dist = {};
+    const Drawable* closest_obj = NULL;
 
     _GET_RETURN_INTERSECT(min_dist, closest_obj, ray.closestIntersection(t_min, t_max, objects));
 
@@ -91,7 +94,7 @@ float Raytrace::ComputeLighting(Ray &ray, const sf::Vector3f &normal, Material p
 
             //check for shadows
             const Drawable* shadow_obj = nullptr;
-            float shadow_obj_dist = {};
+            double shadow_obj_dist = {};
             
             Ray ray_to_light {ray.m_origin, L};
             _GET_RETURN_INTERSECT(shadow_obj_dist, shadow_obj, ray_to_light.closestIntersection(0.001f, t_max, objects));

@@ -2,17 +2,19 @@
 
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include "button.hpp"
 #include <algorithm>
 #include <assert.h>
 #include <SFML/System/Mutex.hpp>
 #include <ctime>
 #include <string.h>
+#include <iostream>
 
 #include "objects.hpp"
 #include "button.hpp"
 
-inline Drawable* generateObject(Drawable::Type type)
+Drawable* generateObject(Drawable::Type type);
+
+Drawable* generateObject(Drawable::Type type)
 {   
     switch(type)
     {
@@ -41,6 +43,8 @@ m_menu(menu_handler)
 
 void MenuSwitcherFunctor::operator()(void* const arg)
 {
+    ignore(arg);
+
     fprintf(stderr, "switching menu\n");
     for(size_t i = 0; i < m_menu->getSize(); i ++)
         m_menu->setVisible(i, false);
@@ -55,33 +59,37 @@ void MenuSwitcherFunctor::operator()(void* const arg)
 
 void AddObjectFunctor::operator()(void* const arg)
 {
+    ignore(arg);
+    
     fprintf(stderr, "adding object %s!\n", (+m_type).c_str());
     
     if((m_objects == nullptr))
         return;
 
-    rendering_mutex.lock();
     
     Drawable* object = generateObject(m_type);
     m_objects->add(object);
-    
-    rendering_mutex.unlock();
 
 }
 
 void DeleteObjectFunctor::operator()(void* const arg)
 {
+
+    ignore(arg);
+
     if((m_objects == nullptr))
         return;
- 
-    for(int i = m_objects->size() - 1; i >= 0; i--)
+    
+    for(long long i = static_cast<long long>(m_objects->size() - 1); i >= 0; i--)
     {
-        fprintf(stderr, "Object %s number %d\n", (+m_type).c_str(), i);
+        fprintf(stderr, "Object %s number %lld\n", (+(*m_objects)[i].getType()).c_str(), i);
  
         if((*m_objects)[i].getType() == m_type)
         {
-            fprintf(stderr, "found! number %d\n", i);
+            fprintf(stderr, "found! number %lld\n", i);
+            
             m_objects->remove(i);
+            
             return;
         }
     }

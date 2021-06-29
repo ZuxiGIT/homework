@@ -4,6 +4,7 @@
 
 #include "ray.hpp"
 #include "functions.inl"
+#include <SFML/System/Mutex.hpp>
 
 
 int Ray::recursion_depth = 1;
@@ -15,13 +16,13 @@ m_direction(direction),
 m_generation(Ray::recursion_depth)
 {}
 
-sf::Vector2f Ray::closestIntersection(float t_min, float t_max, const ObjectManager &objects) const
+sf::Vector2<double> Ray::closestIntersection(float t_min, float t_max, const ObjectManager &objects) const
 {
-    float min_dist = _INFINITY;
+    double min_dist = _INFINITY;
 
     union
     {
-        float fl;
+        double dbl;
         const Drawable *ptr;
     } closest_obj;
 
@@ -38,8 +39,8 @@ sf::Vector2f Ray::closestIntersection(float t_min, float t_max, const ObjectMana
         if (solutions.x < _EPS)
             continue;
 
-        float t1 = solutions.y;
-        float t2 = solutions.z;
+        double t1 = static_cast<double>(solutions.y);
+        double t2 = static_cast<double>(solutions.z);
 
         if (t1 < min_dist && t1 > t_min && t1 < t_max)
         {
@@ -54,5 +55,5 @@ sf::Vector2f Ray::closestIntersection(float t_min, float t_max, const ObjectMana
         }
     }
     
-    return sf::Vector2f(min_dist, closest_obj.fl);
+    return sf::Vector2<double>(min_dist, closest_obj.dbl);
 }

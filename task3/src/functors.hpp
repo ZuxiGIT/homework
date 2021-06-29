@@ -1,5 +1,7 @@
 #pragma once
+
 #include "objects.hpp"
+#include "ignore.hpp"
 // #include "button.hpp"
 
 //???? why we need to write "AbstractFunctor() = default;" otherwise compile error
@@ -54,7 +56,7 @@ public:
 
 	virtual ~TestFunctor() override {}
 
-	virtual void operator() (void* const arg = NULL) override { fprintf(stderr, "test TESTFUNCTOR\nsizeof objectManager is %u\nsizeof lightsManager is %u\nwindow addres is 0x%p\n", m_objects->size(), m_lights->size(), m_target); }
+	virtual void operator() (void* const arg = NULL) override { ignore(arg); fprintf(stderr, "test TESTFUNCTOR\nsizeof objectManager is %llu\nsizeof lightsManager is %llu\nwindow addres is 0x%p\n", m_objects->size(), m_lights->size(), m_target); }
 };
 
 template<typename T>
